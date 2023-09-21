@@ -1,16 +1,16 @@
 const express = require("express");
 const app = express();
 const port = 3000;
-const { getNotifications } = require("./function");
+const expensesRouter = require("./routers/expenses");
+const notificationsRouter = require("./routers/notifications");
+
 app.use(express.json());
 
-require('dotenv').config();
+require("dotenv").config();
 
 // Define a route
-app.get("/getNotifications", async(req, res) => {
-   
-  res.json(await getNotifications())
-});
+app.use("/notifications", notificationsRouter);
+app.use("/expenses", expensesRouter);
 
 // Start the server
 app.listen(port, () => {
