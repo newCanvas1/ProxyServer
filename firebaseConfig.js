@@ -12,6 +12,7 @@ const {
   addDoc,
   setDoc,
   updateDoc,
+  serverTimestamp
 } = require("firebase/firestore/lite");
 // Authentication methods
 const { initializeApp } = require("firebase/app");
@@ -51,4 +52,5 @@ module.exports = {
   addDoc,
   deleteDoc,
   updateDoc,
+  serverTimestamp
 };
