@@ -26,9 +26,9 @@ async function getNotifications(uid, planId) {
   return list;
 }
 
-async function getUserData(id) {
+async function getUserData(uid) {
   // here we need the user id
-  const docRef = doc(db, "User", id);
+  const docRef = doc(db, "User", uid);
 
   try {
     const docSnap = await getDoc(docRef);
@@ -43,15 +43,15 @@ async function getUserData(id) {
     console.log(error);
   }
 }
-async function getPlansData(id) {
-  let idList = [];
-  const planIDQuery = query(collection(db, "User", id, "Plans"));
+async function getUserPlans(uid) {
+  let list = [];
+  const planIDQuery = query(collection(db, "User", uid, "Plans"));
 
   const IDQuerySnapshot = await getDocs(planIDQuery);
   IDQuerySnapshot.forEach((doc) => {
-    idList.push({ data: doc.data(), id: doc.id });
+    list.push({ name: doc.data().name, id: doc.id });
   });
-  return idList;
+  return list;
 }
 async function getExpenses(id, planId) {
   let list = [];
@@ -82,7 +82,6 @@ async function getExpensesBetweenDates(uid, planId) {
   routinesQuerySnapshot.forEach((doc) => {
     list.push({ ...doc.data(), id: doc.id });
   });
-  console.log(list);
   return list;
 }
 
@@ -116,8 +115,41 @@ async function deleteExpense(uid, expenseId, planId) {
       return false;
     });
 }
+async function addPlan(uid, plan) {
+  const ref = collection(db, "User", uid, "Plans");
+  const doc = await addDoc(ref, plan);
+  return doc.id;
+}
+async function deletePlan(uid, planId) {
+
+  const ref = doc(db, "User", uid, "Plans", planId);
+  await deleteDoc(ref)
+    .then(async () => {
+      const routinesQuery = query(
+        collection(db, "User", uid, "Plans"),
+        orderBy("createdAt", "desc")
+      );
+
+      return docs[0].id;
+    })
+    .catch(() => {
+      return false;
+    });
+}
 async function updateExpense(uid, expenseId, updateFields, planId) {
   const ref = doc(db, "User", uid, "Plans", planId, "Expenses", expenseId);
+  const request = await updateDoc(ref, {
+    ...updateFields,
+  });
+}
+async function updatePlan(uid, updateFields, planId) {
+  const ref = doc(db, "User", uid, "Plans", planId);
+  const request = await updateDoc(ref, {
+    ...updateFields,
+  });
+}
+async function updateUser(uid, updateFields) {
+  const ref = doc(db, "User", uid);
   const request = await updateDoc(ref, {
     ...updateFields,
   });
@@ -159,7 +191,7 @@ async function categorizeDocumentsByMonth(id, planId) {
         if (categorizedDocuments[key].documents[day]) {
           categorizedDocuments[key].documents[day].push(doc.data());
         } else {
-          categorizedDocuments[key].documents[day]=[doc.data()];
+          categorizedDocuments[key].documents[day] = [doc.data()];
         }
         // Add the amount spent to the existing total
         categorizedDocuments[key].totalAmount += amountSpent;
@@ -169,7 +201,7 @@ async function categorizeDocumentsByMonth(id, planId) {
           documents: {},
           totalAmount: amountSpent,
         };
-        categorizedDocuments[key].documents[day]=[doc.data()];
+        categorizedDocuments[key].documents[day] = [doc.data()];
       }
     });
 
@@ -203,9 +235,22 @@ async function categorizeDocumentsByMonthAmountOnly(id, planId) {
       // Get the month and year from the date
       const month = date.getMonth();
       const year = date.getFullYear();
-
+      const months = [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December",
+      ];
       // Create a key using the month and year
-      const key = `${month}-${year}`;
+      const key = `${months[month]}-${year}`;
       const amountSpent = doc.data().amount;
       const numOfExpenses = 1;
 
@@ -225,7 +270,7 @@ async function categorizeDocumentsByMonthAmountOnly(id, planId) {
         categorizedDocuments[key] = {
           totalAmount: amountSpent,
           numOfExpenses: numOfExpenses,
-          average: 0,
+          average: amountSpent / numOfExpenses,
         };
       }
     });
@@ -306,11 +351,18 @@ async function getAmountSpentPerDayLastWeek(uid, planId) {
     throw error;
   }
 }
+async function getNumberOfPlans(id) {
+  const routinesQuery = query(collection(db, "User", id, "Plans"));
+  const routinesQuerySnapshot = await getDocs(routinesQuery);
+  const numberOfDocs = routinesQuerySnapshot.size;
+  return numberOfDocs;
+}
 module.exports = {
+  getNumberOfPlans,
   addExpense,
   getNotifications,
   getUserData,
-  getPlansData,
+  getUserPlans,
   getExpenses,
   deleteExpense,
   updateExpense,
@@ -319,4 +371,8 @@ module.exports = {
   categorizeDocumentsByMonth,
   categorizeDocumentsByMonthAmountOnly,
   getAmountSpentPerDayLastWeek,
+  deletePlan,
+  addPlan,
+  updatePlan,
+  updateUser,
 };
