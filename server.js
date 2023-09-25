@@ -5,6 +5,7 @@ const expensesRouter = require("./routers/expenses");
 const notificationsRouter = require("./routers/notifications");
 const plansRouter = require("./routers/plans");
 const userRouter = require("./routers/user");
+const categoriesRouter = require("./routers/categories");
 
 app.use(express.json());
 
@@ -15,6 +16,7 @@ app.use("/notifications", notificationsRouter);
 app.use("/expenses", expensesRouter);
 app.use("/plans", plansRouter);
 app.use("/user", userRouter);
+app.use("/categories", categoriesRouter);
 
 // Start the server
 app.listen(port, () => {

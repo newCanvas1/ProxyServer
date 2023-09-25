@@ -1,11 +1,22 @@
 const express = require("express");
-const {  getUserData, updateUser } = require("../dbFunctions");
+const {  getUserData, updateUser, getUserField } = require("../dbFunctions");
 const userRouter = express.Router();
 userRouter.post("/", async (req, res) => {
   const { uid } = req.body;
 
   try {
     const user = await getUserData(uid);
+    res.json(user);
+  } catch (error) {
+    res.send("no response");
+    console.log(error);
+  }
+});
+userRouter.post("/field", async (req, res) => {
+  const { uid,field } = req.body;
+
+  try {
+    const user = await getUserField(uid,field);
     res.json(user);
   } catch (error) {
     res.send("no response");

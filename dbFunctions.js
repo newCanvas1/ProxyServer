@@ -25,7 +25,23 @@ async function getNotifications(uid, planId) {
 
   return list;
 }
+async function getField(uid, planId, field) {
+  // here we need the user id
+  const docRef = doc(db, "User", uid, "Plans", planId);
 
+  try {
+    const docSnap = await getDoc(docRef);
+    // if it exists
+    if (docSnap.exists()) {
+      // change user state
+      return docSnap.data()[field];
+    } else {
+      console.log("Document does not exist");
+    }
+  } catch (error) {
+    console.log(error);
+  }
+}
 async function getUserData(uid) {
   // here we need the user id
   const docRef = doc(db, "User", uid);
@@ -53,10 +69,19 @@ async function getUserPlans(uid) {
   });
   return list;
 }
-async function getExpenses(id, planId) {
+async function getExpenses(uid, planId, categoryId) {
   let list = [];
   const routinesQuery = query(
-    collection(db, "User", id, "Plans", planId, "Expenses"),
+    collection(
+      db,
+      "User",
+      uid,
+      "Plans",
+      planId,
+      "Categories",
+      categoryId,
+      "Expenses"
+    ),
     orderBy("createdAt", "desc")
   );
 
@@ -67,12 +92,21 @@ async function getExpenses(id, planId) {
   console.log(list);
   return list;
 }
-async function getExpensesBetweenDates(uid, planId) {
+async function getExpensesBetweenDates(uid, planId, categoryId) {
   let list = [];
   const startDate = new Date("2023-01-01");
   const endDate = new Date("2023-04-22");
   const routinesQuery = query(
-    collection(db, "User", uid, "Plans", planId, "Expenses"),
+    collection(
+      db,
+      "User",
+      uid,
+      "Plans",
+      planId,
+      "Categories",
+      categoryId,
+      "Expenses"
+    ),
     orderBy("createdAt", "desc"),
     where("createdAt", ">=", startDate),
     where("createdAt", "<=", endDate)
@@ -85,11 +119,20 @@ async function getExpensesBetweenDates(uid, planId) {
   return list;
 }
 
-async function getExpensesByField(uid, field, value, planId) {
+async function getExpensesByField(uid, planId, categoryId, field, value) {
   let list = [];
 
   const routinesQuery = query(
-    collection(db, "User", uid, "Plans", planId, "Expenses"),
+    collection(
+      db,
+      "User",
+      uid,
+      "Plans",
+      planId,
+      "Categories",
+      categoryId,
+      "Expenses"
+    ),
     orderBy("createdAt", "desc"),
     where(field, "==", value)
   );
@@ -100,13 +143,67 @@ async function getExpensesByField(uid, field, value, planId) {
   console.log(list);
   return list;
 }
-async function addExpense(uid, expense, planId) {
-  const ref = collection(db, "User", uid, "Plans", planId, "Expenses");
+async function addExpense(uid, planId, categoryId, expense) {
+  const ref = collection(
+    db,
+    "User",
+    uid,
+    "Plans",
+    planId,
+    "Categories",
+    categoryId,
+    "Expenses"
+  );
   const doc = await addDoc(ref, expense);
   return doc.id;
 }
-async function deleteExpense(uid, expenseId, planId) {
-  const ref = doc(db, "User", uid, "Plans", planId, "Expenses", expenseId);
+async function getCategories(uid, planId) {
+  let list = [];
+  const routinesQuery = query(
+    collection(db, "User", uid, "Plans", planId, "Categories"),
+    orderBy("createdAt", "desc")
+  );
+
+  const routinesQuerySnapshot = await getDocs(routinesQuery);
+  routinesQuerySnapshot.forEach((doc) => {
+    list.push({ ...doc.data(), id: doc.id });
+  });
+  console.log(list);
+  return list;
+}
+async function addCategory(uid, planId, category) {
+  const ref = collection(db, "User", uid, "Plans", planId, "Categories");
+  const doc = await addDoc(ref, category);
+  return doc.id;
+}
+async function deleteCategory(uid, planId, categoryId) {
+  const ref = doc(db, "User", uid, "Plans", planId, "Categories", categoryId);
+  await deleteDoc(ref)
+    .then(() => {
+      return true;
+    })
+    .catch(() => {
+      return false;
+    });
+}
+async function updateCategory(uid, planId, categoryId, updateFields) {
+  const ref = doc(db, "User", uid, "Plans", planId, "Categories", categoryId);
+  const request = await updateDoc(ref, {
+    ...updateFields,
+  });
+}
+async function deleteExpense(uid, planId, categoryId, expenseId) {
+  const ref = doc(
+    db,
+    "User",
+    uid,
+    "Plans",
+    planId,
+    "Categories",
+    categoryId,
+    "Expenses",
+    expenseId
+  );
   await deleteDoc(ref)
     .then(() => {
       return true;
@@ -121,7 +218,6 @@ async function addPlan(uid, plan) {
   return doc.id;
 }
 async function deletePlan(uid, planId) {
-
   const ref = doc(db, "User", uid, "Plans", planId);
   await deleteDoc(ref)
     .then(async () => {
@@ -136,8 +232,18 @@ async function deletePlan(uid, planId) {
       return false;
     });
 }
-async function updateExpense(uid, expenseId, updateFields, planId) {
-  const ref = doc(db, "User", uid, "Plans", planId, "Expenses", expenseId);
+async function updateExpense(uid, planId, categoryId, expenseId, updateFields) {
+  const ref = doc(
+    db,
+    "User",
+    uid,
+    "Plans",
+    planId,
+    "Categories",
+    categoryId,
+    "Expenses",
+    expenseId
+  );
   const request = await updateDoc(ref, {
     ...updateFields,
   });
@@ -375,4 +481,9 @@ module.exports = {
   addPlan,
   updatePlan,
   updateUser,
+  getField,
+  deleteCategory,
+  updateCategory,
+  addCategory,
+  getCategories,
 };

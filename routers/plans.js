@@ -6,6 +6,7 @@ const {
   updatePlan,
   getUserPlans,
   updateUser,
+  getField,
 } = require("../dbFunctions");
 const plansRouter = express.Router();
 plansRouter.post("/", async (req, res) => {
@@ -43,6 +44,14 @@ plansRouter.post("/update", async (req, res) => {
   const response = await updatePlan(uid, updateFields, planId);
   console.log(response);
   res.json(1);
+});
+plansRouter.post("/field", async (req, res) => {
+  const { uid, field, planId } = req.body;
+  console.log(uid,field,planId);
+
+  const response = await getField(uid, planId, field);
+  console.log(response);
+  res.json(response);
 });
 
 module.exports = plansRouter;
