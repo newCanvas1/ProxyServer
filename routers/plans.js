@@ -12,7 +12,6 @@ const plansRouter = express.Router();
 plansRouter.post("/", async (req, res) => {
   const { uid } = req.body;
   const plans = await getUserPlans(uid);
-  console.log(plans);
   res.json(plans);
 });
 
@@ -24,7 +23,14 @@ plansRouter.post("/add", async (req, res) => {
     budget,
     createdAt: date,
   });
-  updateUser(uid, { lastPlan: response });
+  console.log(response, "has been added");
+  if (response) {
+    console.log("Response is", response, uid);
+    await updateUser(uid, { lastPlan: response }).catch((err) => {
+      console.log(err);
+    });
+  }
+
   res.json(response);
 });
 plansRouter.post("/delete", async (req, res) => {
@@ -47,9 +53,11 @@ plansRouter.post("/update", async (req, res) => {
 });
 plansRouter.post("/field", async (req, res) => {
   const { uid, field, planId } = req.body;
-  console.log(uid,field,planId);
+  console.log(uid, field, planId);
 
-  const response = await getField(uid, planId, field);
+  const response = await getField(uid, planId, field).catch((err) =>
+    console.log(err)
+  );
   console.log(response);
   res.json(response);
 });

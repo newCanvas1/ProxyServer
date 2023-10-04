@@ -13,7 +13,8 @@ const {
   setDoc,
   updateDoc,
   serverTimestamp
-} = require("firebase/firestore/lite");
+
+} = require("firebase/firestore");
 // Authentication methods
 const { initializeApp } = require("firebase/app");
 

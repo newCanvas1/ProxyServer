@@ -34,8 +34,13 @@ async function getField(uid, planId, field) {
     // if it exists
     if (docSnap.exists()) {
       // change user state
+      console.log(docSnap.data()[field]);
+      if (docSnap.data()[field] == undefined) {
+        return false;
+      }
       return docSnap.data()[field];
     } else {
+      return false;
       console.log("Document does not exist");
     }
   } catch (error) {
@@ -61,6 +66,7 @@ async function getUserData(uid) {
 }
 async function getUserPlans(uid) {
   let list = [];
+  console.log(uid, "getUserPlans");
   const planIDQuery = query(collection(db, "User", uid, "Plans"));
 
   const IDQuerySnapshot = await getDocs(planIDQuery);
@@ -173,7 +179,10 @@ async function getCategories(uid, planId) {
 }
 async function addCategory(uid, planId, category) {
   const ref = collection(db, "User", uid, "Plans", planId, "Categories");
-  const doc = await addDoc(ref, category);
+  const doc = await addDoc(ref, category).catch((err) => {
+    console.log(err);
+    return false;
+  });
   return doc.id;
 }
 async function deleteCategory(uid, planId, categoryId) {
@@ -256,9 +265,16 @@ async function updatePlan(uid, updateFields, planId) {
 }
 async function updateUser(uid, updateFields) {
   const ref = doc(db, "User", uid);
+
   const request = await updateDoc(ref, {
     ...updateFields,
-  });
+  })
+    .then(() => {
+      console.log("Field successfully updated!");
+    })
+    .catch((error) => {
+      console.error("Error updating field:", error);
+    });
 }
 async function categorizeDocumentsByMonth(id, planId) {
   try {
@@ -463,7 +479,24 @@ async function getNumberOfPlans(id) {
   const numberOfDocs = routinesQuerySnapshot.size;
   return numberOfDocs;
 }
+
+function setRecentExpenses(myArray, uid, planId) {
+  const routinesQuery = doc(db, "User", uid, "Plans", planId);
+
+  // Create an array
+
+  // Set the value of the array in Firebase
+  routinesQuery;
+  updateDoc(routinesQuery, { recentExpenses: myArray })
+    .then(function () {
+      console.log("Array added to Firebase successfully!");
+    })
+    .catch(function (error) {
+      console.error("Error adding array to Firebase: ", error);
+    });
+}
 module.exports = {
+  setRecentExpenses,
   getNumberOfPlans,
   addExpense,
   getNotifications,

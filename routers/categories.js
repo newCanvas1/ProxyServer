@@ -8,21 +8,27 @@ const {
 const categoriesRouter = express.Router();
 categoriesRouter.post("/", async (req, res) => {
   const { uid, planId } = req.body;
-  const expenses = await getCategories(uid, planId);
-  console.log(expenses);
-  res.json(expenses);
+  console.log(uid, planId, "categories");
+  const categories = await getCategories(uid, planId).catch((err) =>
+    console.log(err)
+  );
+  console.log(categories);
+  res.json(categories);
 });
 
 categoriesRouter.post("/add", async (req, res) => {
-  let { name, uid, planId } = req.body;
-  amount = Math.ceil(Math.random() * 500);
-  const rndmMonth = Math.floor(Math.random() * 12);
-  const rndmDay = Math.ceil(Math.random() * 29);
+  let { name, icon, uid, planId } = req.body;
+  if (name == "" || icon == "") {
+    res.status(400).send("invalid");
+    return;
+  }
+  console.log(name, icon, uid, planId);
+
   const date = new Date();
-  date.setMonth(rndmMonth);
-  date.setDate(rndmDay);
+
   const response = await addCategory(uid, planId, {
     name,
+    icon,
     createdAt: date,
   });
   res.json(response);

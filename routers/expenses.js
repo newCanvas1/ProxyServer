@@ -9,6 +9,8 @@ const {
   categorizeDocumentsByMonth,
   categorizeDocumentsByMonthAmountOnly,
   getAmountSpentPerDayLastWeek,
+  setRecentExpenses,
+  getField,
 } = require("../dbFunctions");
 const expensesRouter = express.Router();
 expensesRouter.post("/", async (req, res) => {
@@ -36,20 +38,36 @@ expensesRouter.get("/field", async (req, res) => {
   res.json(expenses);
 });
 expensesRouter.post("/add", async (req, res) => {
-  let { name, category, /*amount,*/ uid, planId, categoryId } = req.body;
-  amount = Math.ceil(Math.random() * 500);
-  console.log(amount);
+  let { name, amount, uid, category, planId, categoryId } = req.body;
+  if (name == "" || amount == "") {
+    res.status(400).send("invalid");
+    return
+  }
+  console.log("Adding")
+  const MAX = 5;
   const rndmMonth = Math.floor(Math.random() * 12);
   const rndmDay = Math.ceil(Math.random() * 29);
   const date = new Date();
   date.setMonth(rndmMonth);
   date.setDate(rndmDay);
-  const response = await addExpense(uid, planId, categoryId, {
+  const expense = {
     name,
-    category,
     amount,
+    category,
     createdAt: date,
-  });
+  };
+
+  const response = await addExpense(uid, planId, categoryId, expense);
+  const recentList = await getField(uid, planId, "recentExpenses");
+  if (recentList) {
+    if (recentList.length == MAX) {
+      recentList.shift();
+    }
+    recentList.push(expense);
+    setRecentExpenses(recentList, uid, planId);
+  } else {
+    setRecentExpenses([expense], uid, planId);
+  }
   res.json(response);
 });
 expensesRouter.post("/delete", async (req, res) => {
@@ -60,12 +78,23 @@ expensesRouter.post("/delete", async (req, res) => {
 });
 
 expensesRouter.post("/update", async (req, res) => {
-  const { uid, expenseId, updateFields, planId ,categoryId} = req.body;
-  const response = await updateExpense(uid, planId,categoryId, expenseId, updateFields);
+  const { uid, expenseId, updateFields, planId, categoryId } = req.body;
+  const response = await updateExpense(
+    uid,
+    planId,
+    categoryId,
+    expenseId,
+    updateFields
+  );
   console.log(response);
   res.json(1);
 });
-
+expensesRouter.post("/add/recent", async (req, res) => {
+  const { uid, planId } = req.body;
+  const response = await setRecentExpenses([1, 2, 3], uid, planId);
+  console.log(response);
+  res.json(1);
+});
 // expensesRouter.post("/perMonth/all", async (req, res) => {
 //   const { uid, planId } = req.body;
 //   const response = await categorizeDocumentsByMonth(uid, planId);
