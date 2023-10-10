@@ -9,17 +9,21 @@ const categoriesRouter = express.Router();
 categoriesRouter.post("/", async (req, res) => {
   const { uid, planId } = req.body;
   console.log(uid, planId, "categories");
-  const categories = await getCategories(uid, planId).catch((err) =>
-    console.log(err)
-  );
-  console.log(categories);
-  res.json(categories);
+  const categories = await getCategories(uid, planId);
+
+  if (categories) {
+    console.log(categories);
+    res.json(categories);
+  } else {
+    console.log("categories get failed");
+    res.json({ msg: "invalid" });
+  }
 });
 
 categoriesRouter.post("/add", async (req, res) => {
   let { name, icon, uid, planId } = req.body;
   if (name == "" || icon == "") {
-    res.status(400).send("invalid");
+    res.status(400).json({ msg: "invalid" });
     return;
   }
   console.log(name, icon, uid, planId);
@@ -31,20 +35,40 @@ categoriesRouter.post("/add", async (req, res) => {
     icon,
     createdAt: date,
   });
-  res.json(response);
+  if (response) {
+    res.json(response);
+  }
 });
 categoriesRouter.post("/delete", async (req, res) => {
-  const { uid, expenseId, planId, categoryId } = req.body;
-  const response = await deleteCategory(uid, planId, categoryId, expenseId);
-  console.log(response);
-  res.json(response);
+  const { uid, planId, categoryId } = req.body;
+  if (uid == "" || planId == "" || categoryId == "") {
+    res.status(400).json({ msg: "invalid" });
+    return;
+  }
+  const response = await deleteCategory(uid, planId, categoryId);
+
+  if (response) {
+    res.json({ msg: "deleted" });
+    console.log("category deleted", categoryId);
+  } else {
+    res.json({ msg: "invalid" });
+  }
 });
 
 categoriesRouter.post("/update", async (req, res) => {
   const { uid, categoryId, updateFields, planId } = req.body;
+  console.log(uid, categoryId, updateFields, planId);
+  if (updateFields.name == "" || updateFields.icon == "") {
+    res.status(400).json({ msg: "invalid" });
+    return;
+  }
   const response = await updateCategory(uid, planId, categoryId, updateFields);
-  console.log(response);
-  res.json(1);
+  console.log(response, "Hello");
+  if (response) {
+    res.json({ msg: "updated" });
+  } else {
+    res.json({ msg: "invalid" });
+  }
 });
 
 module.exports = categoriesRouter;

@@ -1,3 +1,4 @@
+const { Firestore, getFirestore } = require("firebase/firestore");
 const {
   collection,
   query,
@@ -11,6 +12,8 @@ const {
   addDoc,
   where,
 } = require("./firebaseConfig");
+const firebase = require("firebase/app");
+require("firebase/firestore");
 
 async function getNotifications(uid, planId) {
   let list = [];
@@ -49,9 +52,10 @@ async function getField(uid, planId, field) {
 }
 async function getUserData(uid) {
   // here we need the user id
-  const docRef = doc(db, "User", uid);
 
   try {
+    const docRef = doc(db, "User", uid);
+
     const docSnap = await getDoc(docRef);
     // if it exists
     if (docSnap.exists()) {
@@ -62,18 +66,24 @@ async function getUserData(uid) {
     }
   } catch (error) {
     console.log(error);
+    return false;
   }
 }
 async function getUserPlans(uid) {
   let list = [];
-  console.log(uid, "getUserPlans");
-  const planIDQuery = query(collection(db, "User", uid, "Plans"));
+  try {
+    console.log(uid, "getUserPlans");
+    const planIDQuery = query(collection(db, "User", uid, "Plans"));
 
-  const IDQuerySnapshot = await getDocs(planIDQuery);
-  IDQuerySnapshot.forEach((doc) => {
-    list.push({ name: doc.data().name, id: doc.id });
-  });
-  return list;
+    const IDQuerySnapshot = await getDocs(planIDQuery);
+    IDQuerySnapshot.forEach((doc) => {
+      list.push({ name: doc.data().name, id: doc.id });
+    });
+    return list;
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
 }
 async function getExpenses(uid, planId, categoryId) {
   let list = [];
@@ -165,41 +175,64 @@ async function addExpense(uid, planId, categoryId, expense) {
 }
 async function getCategories(uid, planId) {
   let list = [];
-  const routinesQuery = query(
-    collection(db, "User", uid, "Plans", planId, "Categories"),
-    orderBy("createdAt", "desc")
-  );
 
-  const routinesQuerySnapshot = await getDocs(routinesQuery);
-  routinesQuerySnapshot.forEach((doc) => {
-    list.push({ ...doc.data(), id: doc.id });
-  });
-  console.log(list);
-  return list;
+  try {
+    const routinesQuery = query(
+      collection(db, "User", uid, "Plans", planId, "Categories"),
+      orderBy("createdAt", "desc")
+    );
+
+    const routinesQuerySnapshot = await getDocs(routinesQuery);
+    routinesQuerySnapshot.forEach((doc) => {
+      list.push({ ...doc.data(), id: doc.id });
+    });
+    console.log(list);
+    return list;
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
 }
 async function addCategory(uid, planId, category) {
-  const ref = collection(db, "User", uid, "Plans", planId, "Categories");
-  const doc = await addDoc(ref, category).catch((err) => {
-    console.log(err);
-    return false;
-  });
-  return doc.id;
-}
-async function deleteCategory(uid, planId, categoryId) {
-  const ref = doc(db, "User", uid, "Plans", planId, "Categories", categoryId);
-  await deleteDoc(ref)
-    .then(() => {
-      return true;
-    })
-    .catch(() => {
+  try {
+    const ref = collection(db, "User", uid, "Plans", planId, "Categories");
+    const doc = await addDoc(ref, category).catch((err) => {
+      console.log(err);
       return false;
     });
+    return doc.id;
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
+}
+async function deleteCategory(uid, planId, categoryId) {
+  try {
+    const ref = doc(db, "User", uid, "Plans", planId, "Categories", categoryId);
+    const res = await deleteDoc(ref).catch((err) => {
+      console.log(err);
+      return false;
+    });
+    return true;
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
 }
 async function updateCategory(uid, planId, categoryId, updateFields) {
-  const ref = doc(db, "User", uid, "Plans", planId, "Categories", categoryId);
-  const request = await updateDoc(ref, {
-    ...updateFields,
-  });
+  try {
+    const ref = doc(db, "User", uid, "Plans", planId, "Categories", categoryId);
+    const request = updateDoc(ref, {
+      ...updateFields,
+    }).catch((err) => {
+      console.log(err);
+      return false;
+    });
+    return true;
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
 }
 async function deleteExpense(uid, planId, categoryId, expenseId) {
   const ref = doc(
@@ -222,24 +255,56 @@ async function deleteExpense(uid, planId, categoryId, expenseId) {
     });
 }
 async function addPlan(uid, plan) {
-  const ref = collection(db, "User", uid, "Plans");
-  const doc = await addDoc(ref, plan);
+  try {
+    const ref = collection(db, "User", uid, "Plans");
+    const doc = await addDoc(ref, plan);
+    return doc.id;
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
+}
+async function updateBudget(uid, planId, value, type) {
+  const ref = doc(db, "User", uid, "Plans", planId);
+  try {
+    const docSnap = await getDoc(ref);
+    // if it exists
+    if (docSnap.exists()) {
+      const budget = docSnap.data().budget;
+      if (type == "increment") {
+        const newBudget = budget + value;
+        updateDoc(ref, { budget: newBudget });
+        return;
+      } else if (type == "decrement") {
+        const newBudget = budget - value;
+        updateDoc(ref, { budget: newBudget });
+        return;
+      }
+    } else {
+      console.log("Document does not exist");
+    }
+  } catch (error) {
+    console.log(error);
+  }
   return doc.id;
 }
 async function deletePlan(uid, planId) {
-  const ref = doc(db, "User", uid, "Plans", planId);
-  await deleteDoc(ref)
-    .then(async () => {
-      const routinesQuery = query(
-        collection(db, "User", uid, "Plans"),
-        orderBy("createdAt", "desc")
-      );
-
-      return docs[0].id;
-    })
-    .catch(() => {
-      return false;
-    });
+  try {
+    const ref = doc(db, "User", uid, "Plans", planId);
+    await deleteDoc(ref)
+      .then(async () => {
+        console.log("Plan deleted", planId);
+        return true;
+      })
+      .catch((err) => {
+        console.log(err);
+        return false;
+      });
+    return true;
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
 }
 async function updateExpense(uid, planId, categoryId, expenseId, updateFields) {
   const ref = doc(
@@ -474,10 +539,15 @@ async function getAmountSpentPerDayLastWeek(uid, planId) {
   }
 }
 async function getNumberOfPlans(id) {
-  const routinesQuery = query(collection(db, "User", id, "Plans"));
-  const routinesQuerySnapshot = await getDocs(routinesQuery);
-  const numberOfDocs = routinesQuerySnapshot.size;
-  return numberOfDocs;
+  try {
+    const routinesQuery = query(collection(db, "User", id, "Plans"));
+    const routinesQuerySnapshot = await getDocs(routinesQuery);
+    const numberOfDocs = routinesQuerySnapshot.size;
+    return numberOfDocs;
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
 }
 
 function setRecentExpenses(myArray, uid, planId) {
@@ -519,4 +589,5 @@ module.exports = {
   updateCategory,
   addCategory,
   getCategories,
+  updateBudget,
 };

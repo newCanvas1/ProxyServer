@@ -11,6 +11,7 @@ const {
   getAmountSpentPerDayLastWeek,
   setRecentExpenses,
   getField,
+  updateBudget,
 } = require("../dbFunctions");
 const expensesRouter = express.Router();
 expensesRouter.post("/", async (req, res) => {
@@ -41,9 +42,9 @@ expensesRouter.post("/add", async (req, res) => {
   let { name, amount, uid, category, planId, categoryId } = req.body;
   if (name == "" || amount == "") {
     res.status(400).send("invalid");
-    return
+    return;
   }
-  console.log("Adding")
+  console.log("Adding");
   const MAX = 5;
   const rndmMonth = Math.floor(Math.random() * 12);
   const rndmDay = Math.ceil(Math.random() * 29);
@@ -58,6 +59,7 @@ expensesRouter.post("/add", async (req, res) => {
   };
 
   const response = await addExpense(uid, planId, categoryId, expense);
+  updateBudget(uid, planId, amount, "decrement");
   const recentList = await getField(uid, planId, "recentExpenses");
   if (recentList) {
     if (recentList.length == MAX) {
@@ -74,6 +76,8 @@ expensesRouter.post("/delete", async (req, res) => {
   const { uid, expenseId, planId, categoryId } = req.body;
   const response = await deleteExpense(uid, planId, categoryId, expenseId);
   console.log(response);
+  // updateBudget(uid, planId, amount, "increment");
+
   res.json(response);
 });
 
