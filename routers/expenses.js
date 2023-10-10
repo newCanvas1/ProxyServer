@@ -1,18 +1,16 @@
 const express = require("express");
 const {
-  deleteExpense,
   getExpenses,
-  addExpense,
-  updateExpense,
   getExpensesBetweenDates,
   getExpensesByField,
-  categorizeDocumentsByMonth,
-  categorizeDocumentsByMonthAmountOnly,
-  getAmountSpentPerDayLastWeek,
-  setRecentExpenses,
-  getField,
-  updateBudget,
-} = require("../dbFunctions");
+  addExpense,
+  deleteExpense,
+  updateExpense,
+} = require("../dbFunctions/expenses");
+const { updateDoc, doc } = require("firebase/firestore");
+const { getField } = require("../dbFunctions/plans");
+const { db } = require("../firebaseConfig");
+
 const expensesRouter = express.Router();
 expensesRouter.post("/", async (req, res) => {
   const { uid, planId, categoryId } = req.body;
@@ -41,16 +39,17 @@ expensesRouter.get("/field", async (req, res) => {
 expensesRouter.post("/add", async (req, res) => {
   let { name, amount, uid, category, planId, categoryId } = req.body;
   if (name == "" || amount == "") {
-    res.status(400).send("invalid");
+    res.status(400).send({ msg: "invalid" });
     return;
   }
   console.log("Adding");
   const MAX = 5;
-  const rndmMonth = Math.floor(Math.random() * 12);
-  const rndmDay = Math.ceil(Math.random() * 29);
   const date = new Date();
-  date.setMonth(rndmMonth);
-  date.setDate(rndmDay);
+
+  // const rndmMonth = Math.floor(Math.random() * 12);
+  // const rndmDay = Math.ceil(Math.random() * 29);
+  // date.setMonth(rndmMonth);
+  // date.setDate(rndmDay);
   const expense = {
     name,
     amount,
@@ -59,7 +58,6 @@ expensesRouter.post("/add", async (req, res) => {
   };
 
   const response = await addExpense(uid, planId, categoryId, expense);
-  updateBudget(uid, planId, amount, "decrement");
   const recentList = await getField(uid, planId, "recentExpenses");
   if (recentList) {
     if (recentList.length == MAX) {
@@ -70,19 +68,29 @@ expensesRouter.post("/add", async (req, res) => {
   } else {
     setRecentExpenses([expense], uid, planId);
   }
-  res.json(response);
+  if (response) {
+    res.json(response);
+  } else {
+    res.json({ msg: "invalid" });
+  }
 });
 expensesRouter.post("/delete", async (req, res) => {
   const { uid, expenseId, planId, categoryId } = req.body;
   const response = await deleteExpense(uid, planId, categoryId, expenseId);
-  console.log(response);
   // updateBudget(uid, planId, amount, "increment");
-
-  res.json(response);
+  if (response) {
+    res.json({ msg: "deleted" });
+  } else {
+    res.json({ msg: "invalid" });
+  }
 });
 
 expensesRouter.post("/update", async (req, res) => {
   const { uid, expenseId, updateFields, planId, categoryId } = req.body;
+  if (updateFields.name == "" || updateFields.amount == "") {
+    res.json({ msg: "invalid" });
+    return;
+  }
   const response = await updateExpense(
     uid,
     planId,
@@ -90,8 +98,11 @@ expensesRouter.post("/update", async (req, res) => {
     expenseId,
     updateFields
   );
-  console.log(response);
-  res.json(1);
+  if (response) {
+    res.json({ msg: "updated" });
+  } else {
+    res.json({ msg: "invalid" });
+  }
 });
 expensesRouter.post("/add/recent", async (req, res) => {
   const { uid, planId } = req.body;
@@ -99,19 +110,23 @@ expensesRouter.post("/add/recent", async (req, res) => {
   console.log(response);
   res.json(1);
 });
-// expensesRouter.post("/perMonth/all", async (req, res) => {
-//   const { uid, planId } = req.body;
-//   const response = await categorizeDocumentsByMonth(uid, planId);
-//   res.json(response);
-// });
-// expensesRouter.post("/perMonth/amount", async (req, res) => {
-//   const { uid, planId } = req.body;
-//   const response = await categorizeDocumentsByMonthAmountOnly(uid, planId);
-//   res.json(response);
-// });
-// expensesRouter.post("/lastWeek", async (req, res) => {
-//   const { uid, planId } = req.body;
-//   const response = await getAmountSpentPerDayLastWeek(uid, planId);
-//   res.json(response);
-// });
+function setRecentExpenses(myArray, uid, planId) {
+  try {
+    const routinesQuery = doc(db, "User", uid, "Plans", planId);
+
+    // Create an array
+
+    // Set the value of the array in Firebase
+    routinesQuery;
+    updateDoc(routinesQuery, { recentExpenses: myArray })
+      .then(function () {
+        console.log("Array added to Firebase successfully!");
+      })
+      .catch(function (error) {
+        console.error("Error adding array to Firebase: ", error);
+      });
+  } catch (error) {
+    console.log(error);
+  }
+}
 module.exports = expensesRouter;

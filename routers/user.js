@@ -1,5 +1,5 @@
 const express = require("express");
-const { getUserData, updateUser } = require("../dbFunctions");
+const { getUserData, updateUser } = require("../dbFunctions/user");
 const userRouter = express.Router();
 userRouter.post("/", async (req, res) => {
   const { uid } = req.body;
@@ -8,7 +8,7 @@ userRouter.post("/", async (req, res) => {
   if (user) {
     res.json(user);
   } else {
-    console.log("User get failed")
+    console.log("User get failed");
 
     res.json({ msg: "invalid" });
   }

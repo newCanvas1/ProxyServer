@@ -1,13 +1,7 @@
 const express = require("express");
-const {
-  deletePlan,
-  addPlan,
-  getNumberOfPlans,
-  updatePlan,
-  getUserPlans,
-  updateUser,
-  getField,
-} = require("../dbFunctions");
+const { getUserPlans, addPlan, getNumberOfPlans, deletePlan, updatePlan, getField } = require("../dbFunctions/plans");
+const { updateUser } = require("../dbFunctions/user");
+
 const plansRouter = express.Router();
 plansRouter.post("/", async (req, res) => {
   const { uid } = req.body;

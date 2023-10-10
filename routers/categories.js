@@ -4,7 +4,8 @@ const {
   addCategory,
   deleteCategory,
   updateCategory,
-} = require("../dbFunctions");
+} = require("../dbFunctions/categories");
+
 const categoriesRouter = express.Router();
 categoriesRouter.post("/", async (req, res) => {
   const { uid, planId } = req.body;

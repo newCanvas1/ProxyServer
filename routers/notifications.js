@@ -1,20 +1,40 @@
 const express = require("express");
-const { getNotifications } = require("../dbFunctions");
+const {
+  getNotifications,
+  addNotification,
+} = require("../dbFunctions/notifications");
 const notificationsRouter = express.Router();
 notificationsRouter.post("/", async (req, res) => {
   const { uid, planId } = req.body;
 
   try {
     const notifications = await getNotifications(uid, planId);
-    console.log(notifications.length == 0);
     if (notifications == 0) {
       res.json(false);
     } else {
       res.json(notifications);
     }
   } catch (error) {
-    res.send("no response")
+    res.json({ msg: "invalid" });
     console.log(error);
+  }
+});
+notificationsRouter.post("/add", async (req, res) => {
+  let { uid, planId, message, importance } = req.body;
+  if (message == "" || importance == "") {
+    res.status(400).json({ msg: "invalid" });
+    return;
+  }
+  const notification = {
+    message: message,
+    importance: importance,
+    createdAt: new Date(),
+  };
+  const response = await addNotification(uid, planId, notification);
+  if (response) {
+    res.json(response);
+  } else {
+    res.json({ msg: "invalid" });
   }
 });
 module.exports = notificationsRouter;
