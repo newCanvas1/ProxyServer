@@ -20,8 +20,9 @@ async function addPlan(uid, plan) {
   }
 }
 async function updateBudget(uid, planId, value, type) {
-  const ref = doc(db, "User", uid, "Plans", planId);
   try {
+    const ref = doc(db, "User", uid, "Plans", planId);
+
     const docSnap = await getDoc(ref);
     // if it exists
     if (docSnap.exists()) {
@@ -107,13 +108,18 @@ async function getUserPlans(uid) {
   }
 }
 async function updatePlan(uid, updateFields, planId) {
-  const ref = doc(db, "User", uid, "Plans", planId);
-  const request = await updateDoc(ref, {
-    ...updateFields,
-  });
-  if (request) {
-    return true;
-  } else {
+  try {
+    const ref = doc(db, "User", uid, "Plans", planId);
+    const request = await updateDoc(ref, {
+      ...updateFields,
+    });
+    if (request) {
+      return true;
+    } else {
+      return false;
+    }
+  } catch (error) {
+    console.log(error);
     return false;
   }
 }
