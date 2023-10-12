@@ -2,10 +2,8 @@ const {
   collection,
   query,
   getDocs,
-
   orderBy,
   db,
-
   where,
 } = require("./firebaseConfig");
 const firebase = require("firebase/app");

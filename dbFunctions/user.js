@@ -20,17 +20,21 @@ async function getUserData(uid) {
 }
 
 async function updateUser(uid, updateFields) {
-  const ref = doc(db, "User", uid);
+  try {
+    const ref = doc(db, "User", uid);
 
-  const request = await updateDoc(ref, {
-    ...updateFields,
-  })
-    .then(() => {
-      console.log("Field successfully updated!");
-    })
-    .catch((error) => {
-      console.error("Error updating field:", error);
+    const request = await updateDoc(ref, {
+      ...updateFields,
     });
+    if (request) {
+      return true;
+    } else {
+      return false;
+    }
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
 }
 
 module.exports = {
