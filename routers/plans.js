@@ -1,5 +1,12 @@
 const express = require("express");
-const { getUserPlans, addPlan, getNumberOfPlans, deletePlan, updatePlan, getField } = require("../dbFunctions/plans");
+const {
+  getUserPlans,
+  addPlan,
+  getNumberOfPlans,
+  deletePlan,
+  updatePlan,
+  getField,
+} = require("../dbFunctions/plans");
 const { updateUser } = require("../dbFunctions/user");
 
 const plansRouter = express.Router();
@@ -9,7 +16,7 @@ plansRouter.post("/", async (req, res) => {
   if (plans) {
     res.json(plans);
   } else {
-    console.log("Plans get failed")
+    console.log("Plans get failed");
     res.json({ msg: "invalid" });
   }
 });
@@ -61,18 +68,19 @@ plansRouter.post("/update", async (req, res) => {
     return;
   }
   const response = await updatePlan(uid, updateFields, planId);
-  console.log(response,"updated");
+  console.log(response, "updated");
   res.json({ msg: "updated" });
 });
 plansRouter.post("/field", async (req, res) => {
   const { uid, field, planId } = req.body;
   console.log(uid, field, planId);
 
-  const response = await getField(uid, planId, field).catch((err) =>
-    console.log(err)
-  );
-  console.log(response);
-  res.json(response);
+  const response = await getField(uid, planId, field);
+  if (response) {
+    res.json(response);
+  } else {
+    res.json({ msg: "invalid" });
+  }
 });
 
 module.exports = plansRouter;

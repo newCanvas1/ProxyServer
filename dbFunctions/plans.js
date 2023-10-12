@@ -130,9 +130,10 @@ async function getNumberOfPlans(id) {
 }
 async function getField(uid, planId, field) {
   // here we need the user id
-  const docRef = doc(db, "User", uid, "Plans", planId);
 
   try {
+    const docRef = doc(db, "User", uid, "Plans", planId);
+
     const docSnap = await getDoc(docRef);
     // if it exists
     if (docSnap.exists()) {
