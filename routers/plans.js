@@ -61,7 +61,7 @@ plansRouter.post("/update", async (req, res) => {
     return;
   }
   const response = await updatePlan(uid, updateFields, planId);
-  console.log(response);
+  console.log(response,"updated");
   res.json({ msg: "updated" });
 });
 plansRouter.post("/field", async (req, res) => {

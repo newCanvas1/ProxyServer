@@ -92,9 +92,14 @@ async function getUserPlans(uid) {
     const planIDQuery = query(collection(db, "User", uid, "Plans"));
 
     const IDQuerySnapshot = await getDocs(planIDQuery);
-    IDQuerySnapshot.forEach((doc) => {
-      list.push({ name: doc.data().name, id: doc.id });
-    });
+    if (IDQuerySnapshot) {
+      IDQuerySnapshot.forEach((doc) => {
+        list.push({ name: doc.data().name, id: doc.id });
+      });
+    } else {
+      return false;
+    }
+
     return list;
   } catch (error) {
     console.log(error);
@@ -106,6 +111,11 @@ async function updatePlan(uid, updateFields, planId) {
   const request = await updateDoc(ref, {
     ...updateFields,
   });
+  if (request) {
+    return true;
+  } else {
+    return false;
+  }
 }
 async function getNumberOfPlans(id) {
   try {
