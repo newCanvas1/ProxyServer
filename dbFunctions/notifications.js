@@ -1,4 +1,4 @@
-const { collection, query, getDocs, db, addDoc } = require("../firebaseConfig");
+const { collection, query, getDocs, db, addDoc, doc, deleteDoc } = require("../firebaseConfig");
 async function getNotifications(uid, planId) {
   try {
     let list = [];
@@ -29,7 +29,35 @@ async function addNotification(uid, planId, notification) {
   }
 }
 
+async function deleteNotification(uid, planId, notificationId) {
+  try {
+    const ref = doc(
+      db,
+      "User",
+      uid,
+      "Plans",
+      planId,
+      "Notifications",
+      notificationId
+    );
+    await deleteDoc(ref)
+      .then(async () => {
+        console.log("Notification deleted", notificationId);
+        return true;
+      })
+      .catch((err) => {
+        console.log(err);
+        return false;
+      });
+    return true;
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
+}
+
 module.exports = {
   getNotifications,
   addNotification,
+  deleteNotification
 };

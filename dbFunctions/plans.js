@@ -8,6 +8,7 @@ const {
   updateDoc,
   deleteDoc,
   addDoc,
+  
 } = require("../firebaseConfig");
 async function addPlan(uid, plan) {
   try {
@@ -47,6 +48,7 @@ async function updateBudget(uid, planId, value, type) {
 async function deletePlan(uid, planId) {
   try {
     const ref = doc(db, "User", uid, "Plans", planId);
+    
     await deleteDoc(ref)
       .then(async () => {
         console.log("Plan deleted", planId);

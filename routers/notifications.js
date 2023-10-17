@@ -2,6 +2,7 @@ const express = require("express");
 const {
   getNotifications,
   addNotification,
+  deleteNotification,
 } = require("../dbFunctions/notifications");
 const notificationsRouter = express.Router();
 notificationsRouter.post("/", async (req, res) => {
@@ -19,6 +20,16 @@ notificationsRouter.post("/", async (req, res) => {
     console.log(error);
   }
 });
+notificationsRouter.post("/delete", async (req, res) => {
+  const { uid, planId, notificationId } = req.body;
+  const response = await deleteNotification(uid, planId, notificationId);
+  if (response) {
+    res.json({ msg: "deleted" });
+  } else {
+    res.json({ msg: "invalid" });
+  }
+});
+
 notificationsRouter.post("/add", async (req, res) => {
   let { uid, planId, message, importance } = req.body;
   if (message == "" || importance == "") {

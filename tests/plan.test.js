@@ -5,6 +5,8 @@ const { API, uid } = require("./testInfo");
 var planId = "";
 var categoryId = "";
 var expenseId = "";
+var notificationId = "";
+
 describe("Plans Test Cases", () => {
   test("add an invalid plan", async () => {
     const plan = { name: "", budget: 1000, createdAt: new Date() };
@@ -259,6 +261,7 @@ describe("Notifications Test Cases", () => {
       body: JSON.stringify(body),
     });
     const status = await request.json();
+    notificationId = status;
     expect(status.length).toBe(20);
   });
 
@@ -330,6 +333,19 @@ describe("Deletion Test Cases", () => {
     const status = await request.json();
     expect(status.msg).toBe("deleted");
   });
+
+  test("delete a notification", async () => {
+    const body = { planId: planId, uid: uid, notificationId: notificationId };
+    console.log(uid, planId, notificationId);
+    const request = await fetch(`${API}/notifications/delete`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const status = await request.json();
+    expect(status.msg).toBe("deleted");
+  });
+
   test("invalid deletion of a plan", async () => {
     const body = { planId: planId };
     const request = await fetch(`${API}/plans/delete`, {
