@@ -10,7 +10,10 @@ const categoriesRouter = require("./routers/categories");
 app.use(express.json());
 
 require("dotenv").config();
-
+// add delay to responses
+app.use((req, res, next) => {
+  setTimeout(next, 1000);
+});
 // Define a route
 app.use("/notifications", notificationsRouter);
 app.use("/expenses", expensesRouter);
