@@ -1,6 +1,8 @@
 const express = require("express");
 const app = express();
 const port = 3000;
+const DELAY_ENABLED = false;
+const DELAY = 1; // in seconds
 const expensesRouter = require("./routers/expenses");
 const notificationsRouter = require("./routers/notifications");
 const plansRouter = require("./routers/plans");
@@ -11,9 +13,12 @@ app.use(express.json());
 
 require("dotenv").config();
 // add delay to responses
-app.use((req, res, next) => {
-  setTimeout(next, 1000);
-});
+if (DELAY_ENABLED) {
+  app.use((req, res, next) => {
+    setTimeout(next, DELAY * 1000);
+  });
+}
+
 // Define a route
 app.use("/notifications", notificationsRouter);
 app.use("/expenses", expensesRouter);
