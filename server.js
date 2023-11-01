@@ -1,13 +1,14 @@
 const express = require("express");
 const app = express();
 const port = 3000;
-const DELAY_ENABLED = false;
+const DELAY_ENABLED = true;
 const DELAY = 1; // in seconds
 const expensesRouter = require("./routers/expenses");
 const notificationsRouter = require("./routers/notifications");
 const plansRouter = require("./routers/plans");
 const userRouter = require("./routers/user");
 const categoriesRouter = require("./routers/categories");
+const goalsRouter = require("./routers/goals");
 
 app.use(express.json());
 
@@ -25,6 +26,7 @@ app.use("/expenses", expensesRouter);
 app.use("/plans", plansRouter);
 app.use("/user", userRouter);
 app.use("/categories", categoriesRouter);
+app.use("/goals", goalsRouter);
 
 // Start the server
 app.listen(port, () => {

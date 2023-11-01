@@ -6,6 +6,7 @@ var planId = "";
 var categoryId = "";
 var expenseId = "";
 var notificationId = "";
+var goalId = "";
 
 describe("Plans Test Cases", () => {
   test("add an invalid plan", async () => {
@@ -246,6 +247,70 @@ describe("Expenses Test Cases", () => {
     expect(status.msg).toBe("invalid");
   });
 });
+describe("Goals Test Cases", () => {
+  test("add goal", async () => {
+    const body = {
+      planId: planId,
+      uid: uid,
+      name: "goal 1",
+      amount: 1000,
+      endDate: new Date(),
+    };
+    const request = await fetch(`${API}/goals/add`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const status = await request.json();
+    goalId = status;
+    expect(status.length).toBe(20);
+  });
+  test("add goal failed", async () => {
+    const body = {
+      planId: planId,
+      uid: uid,
+      name: "expense",
+    };
+    const request = await fetch(`${API}/goals/add`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const status = await request.json();
+
+    expect(status.msg).toBe("invalid");
+  });
+  test("update goal", async () => {
+    const body = {
+      planId: planId,
+      uid: uid,
+      goalId: goalId,
+      updateFields: { name: "new", amount: 2000 },
+    };
+    const request = await fetch(`${API}/goals/update`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const status = await request.json();
+    expect(status.msg).toBe("updated");
+  });
+  test("update expense failed", async () => {
+    const body = {
+      planId: planId,
+      uid: uid,
+      goalId: goalId,
+      updateFields: { name: "new", amount: "" },
+    };
+    const request = await fetch(`${API}/goals/update`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const status = await request.json();
+    expect(status.msg).toBe("invalid");
+  });
+});
 
 describe("Notifications Test Cases", () => {
   test("add notification", async () => {
@@ -288,6 +353,35 @@ describe("Deletion Test Cases", () => {
       categoryId: categoryId,
     };
     const request = await fetch(`${API}/expenses/delete`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const status = await request.json();
+
+    expect(status.msg).toBe("invalid");
+  });
+  test("delete goals", async () => {
+    const body = {
+      planId: planId,
+      uid: uid,
+      goalId: goalId,
+    };
+    const request = await fetch(`${API}/goals/delete`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const status = await request.json();
+
+    expect(status.msg).toBe("deleted");
+  });
+  test("delete goal failed", async () => {
+    const body = {
+      planId: planId,
+      uid: uid,
+    };
+    const request = await fetch(`${API}/goals/delete`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
