@@ -134,24 +134,7 @@ async function getNumberOfPlans(id) {
     return false;
   }
 }
-async function getField(uid, planId, field) {
-  // here we need the user id
 
-  try {
-    const docRef = doc(db, "User", uid, "Plans", planId);
-
-    const docSnap = await getDoc(docRef);
-    // if it exists
-    if (docSnap.exists()) {
-      // change user state
-      return docSnap.data()[field];
-    } else {
-      console.log("Document does not exist");
-    }
-  } catch (error) {
-    console.log(error);
-  }
-}
 module.exports = {
   addPlan,
   deletePlan,

@@ -45,11 +45,6 @@ expensesRouter.post("/add", async (req, res) => {
   console.log("Adding");
   const MAX = 5;
   const date = new Date();
-
-  // const rndmMonth = Math.floor(Math.random() * 12);
-  // const rndmDay = Math.ceil(Math.random() * 29);
-  // date.setMonth(rndmMonth);
-  // date.setDate(rndmDay);
   const expense = {
     name,
     amount,
@@ -106,7 +101,7 @@ expensesRouter.post("/update", async (req, res) => {
 });
 expensesRouter.post("/add/recent", async (req, res) => {
   const { uid, planId } = req.body;
-  const response = await setRecentExpenses([1, 2, 3], uid, planId);
+  const response = setRecentExpenses([1, 2, 3], uid, planId);
   console.log(response);
   res.json(1);
 });
