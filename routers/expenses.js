@@ -99,12 +99,6 @@ expensesRouter.post("/update", async (req, res) => {
     res.json({ msg: "invalid" });
   }
 });
-expensesRouter.post("/add/recent", async (req, res) => {
-  const { uid, planId } = req.body;
-  const response = setRecentExpenses([1, 2, 3], uid, planId);
-  console.log(response);
-  res.json(1);
-});
 function setRecentExpenses(myArray, uid, planId) {
   try {
     const routinesQuery = doc(db, "User", uid, "Plans", planId);

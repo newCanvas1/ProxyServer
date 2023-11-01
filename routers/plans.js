@@ -49,7 +49,7 @@ plansRouter.post("/delete", async (req, res) => {
   const { uid, planId } = req.body;
   const numOfPlans = await getNumberOfPlans(uid);
   if (numOfPlans == 1) {
-    // res.json({ msg: "You must have atleast one plan." });
+    res.json({ msg: "invalid" });
   } else {
     const response = await deletePlan(uid, planId);
     console.log(response);

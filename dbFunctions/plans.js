@@ -110,14 +110,17 @@ async function getUserPlans(uid) {
 async function updatePlan(uid, updateFields, planId) {
   try {
     const ref = doc(db, "User", uid, "Plans", planId);
-    const request = await updateDoc(ref, {
+    let result = false;
+    await updateDoc(ref, {
       ...updateFields,
-    });
-    if (request) {
-      return true;
-    } else {
-      return false;
-    }
+    })
+      .then(() => {
+        result = true;
+      })
+      .catch(() => {
+        result = false;
+      });
+    return result;
   } catch (error) {
     console.log(error);
     return false;
