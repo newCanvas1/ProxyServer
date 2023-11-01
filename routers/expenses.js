@@ -117,7 +117,6 @@ function setRecentExpenses(myArray, uid, planId) {
     // Create an array
 
     // Set the value of the array in Firebase
-    routinesQuery;
     updateDoc(routinesQuery, { recentExpenses: myArray })
       .then(function () {
         console.log("Array added to Firebase successfully!");

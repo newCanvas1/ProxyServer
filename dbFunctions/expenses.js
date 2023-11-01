@@ -44,7 +44,7 @@ async function updateExpense(uid, planId, categoryId, expenseId, updateFields) {
       "Expenses",
       expenseId
     );
-    const request = await updateDoc(ref, {
+ await updateDoc(ref, {
       ...updateFields,
     });
     return true;
