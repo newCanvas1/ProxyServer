@@ -45,7 +45,6 @@ goalsRouter.post("/add", async (req, res) => {
 goalsRouter.post("/delete", async (req, res) => {
   const { uid, planId, goalId } = req.body;
   const response = await deleteGoal(uid, planId, goalId);
-  console.log(response);
   if (response) {
     res.json({ msg: "deleted" });
   } else {
@@ -63,9 +62,14 @@ goalsRouter.post("/update", async (req, res) => {
     res.json({ msg: "invalid" });
     return;
   }
+  console.log(uid, planId, goalId, updateFields)
   const response = await updateGoal(uid, planId, goalId, updateFields);
-  console.log(response, "updated");
-  res.json({ msg: "updated" });
+  console.log("HERE is",response)
+  if (response) {
+    res.json({ msg: "updated" });
+  } else {
+    res.json({ msg: "invalid" });
+  }
 });
 goalsRouter.post("/field", async (req, res) => {
   const { uid, planId, goalId, field } = req.body;

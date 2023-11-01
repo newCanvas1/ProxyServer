@@ -2,11 +2,11 @@ const fetch = require("node-fetch");
 // user uid
 const { API, uid } = require("./testInfo");
 // planId, used to set a plan and test its deletion
-var planId = "";
-var categoryId = "";
-var expenseId = "";
-var notificationId = "";
-var goalId = "";
+let planId = "";
+let categoryId = "";
+let expenseId = "";
+let notificationId = "";
+let goalId = "";
 
 describe("Plans Test Cases", () => {
   test("add an invalid plan", async () => {
@@ -285,7 +285,7 @@ describe("Goals Test Cases", () => {
       planId: planId,
       uid: uid,
       goalId: goalId,
-      updateFields: { name: "new", amount: 2000 },
+      updateFields: { name: "new", amount: 2000, endDate: new Date() },
     };
     const request = await fetch(`${API}/goals/update`, {
       method: "POST",

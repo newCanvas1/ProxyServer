@@ -62,18 +62,22 @@ async function getUserGoals(uid, planId) {
     return false;
   }
 }
-async function updateGoal(uid, planId, goalId,updateFields) {
+async function updateGoal(uid, planId, goalId, updateFields) {
   try {
     const ref = doc(db, "User", uid, "Plans", planId, "Goals", goalId);
-    const request = await updateDoc(ref, {
+    let result = false;
+    await updateDoc(ref, {
       ...updateFields,
-    });
-    if (request) {
-      return true;
-    } else {
-      return false;
-    }
+    })
+      .then(() => {
+        result = true;
+      })
+      .catch(() => {
+        result = false;
+      });
+    return result;
   } catch (error) {
+
     console.log(error);
     return false;
   }
