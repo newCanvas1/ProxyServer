@@ -149,6 +149,7 @@ async function addExpense(uid, planId, categoryId, expense) {
   }
 }
 
+
 async function getExpenseAmount(uid, planId, categoryId, expenseId) {
   try {
     const routinesQuery = 

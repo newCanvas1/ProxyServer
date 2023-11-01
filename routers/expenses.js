@@ -9,7 +9,7 @@ const {
   getExpenseAmount,
 } = require("../dbFunctions/expenses");
 const { updateDoc, doc } = require("firebase/firestore");
-const { getField, updateBudget } = require("../dbFunctions/plans");
+const { getField, updateSpending } = require("../dbFunctions/plans");
 const { db } = require("../firebaseConfig");
 
 const expensesRouter = express.Router();
@@ -43,7 +43,6 @@ expensesRouter.post("/add", async (req, res) => {
     res.status(400).send({ msg: "invalid" });
     return;
   }
-  console.log("Adding");
   const MAX = 5;
   const date = new Date();
   const expense = {
@@ -65,7 +64,7 @@ expensesRouter.post("/add", async (req, res) => {
     setRecentExpenses([expense], uid, planId);
   }
   if (response) {
-    updateBudget(uid, planId, amount, "decrement");
+    await updateSpending(uid, planId, amount, "increment");
     res.json(response);
   } else {
     res.json({ msg: "invalid" });
@@ -79,7 +78,7 @@ expensesRouter.post("/delete", async (req, res) => {
     res.json({ msg: "invalid" });
     return;
   }
-  updateBudget(uid, planId, parseFloat(amount), "increment");
+  updateSpending(uid, planId, parseFloat(amount), "decrement");
 
   const response = await deleteExpense(uid, planId, categoryId, expenseId);
   if (response) {
@@ -108,18 +107,18 @@ expensesRouter.post("/update", async (req, res) => {
   if (response) {
     if (amount) {
       if (updateFields.amount < amount) {
-        updateBudget(
+        updateSpending(
           uid,
           planId,
           parseFloat(amount) - updateFields.amount,
-          "increment"
+          "decrement"
         );
       } else {
-        updateBudget(
+        updateSpending(
           uid,
           planId,
           updateFields.amount - parseFloat(amount),
-          "decrement"
+          "increment"
         );
       }
     } else {

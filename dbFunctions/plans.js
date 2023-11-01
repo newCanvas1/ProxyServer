@@ -9,6 +9,7 @@ const {
   deleteDoc,
   addDoc,
 } = require("../firebaseConfig");
+const { addNotification } = require("./notifications");
 async function addPlan(uid, plan) {
   try {
     const ref = collection(db, "User", uid, "Plans");
@@ -19,23 +20,22 @@ async function addPlan(uid, plan) {
     return false;
   }
 }
-async function updateBudget(uid, planId, value, type) {
+async function updateSpending(uid, planId, value, type) {
   try {
     const ref = doc(db, "User", uid, "Plans", planId);
-
+    let newBudget = 0;
     const docSnap = await getDoc(ref);
     // if it exists
     if (docSnap.exists()) {
-      const budget = docSnap.data().budget;
-      if (type == "increment") {
-        const newBudget = budget + value;
-        updateDoc(ref, { budget: newBudget });
-        return;
-      } else if (type == "decrement") {
-        const newBudget = budget - value;
-        updateDoc(ref, { budget: newBudget });
-        return;
+      const budget = docSnap.data().spending;
+      if (type == "decrement") {
+        newBudget = parseFloat(budget) - parseFloat(value);
+      } else {
+        newBudget = parseFloat(budget) + parseFloat(value);
       }
+      updateDoc(ref, { spending: newBudget });
+      checkBudgetAndNotify(uid, planId);
+      return;
     } else {
       console.log("Document does not exist");
     }
@@ -138,6 +138,18 @@ async function getNumberOfPlans(id) {
   }
 }
 
+async function checkBudgetAndNotify(uid, planId) {
+  const budget = await getField(uid, planId, "budget");
+  const spending = await getField(uid, planId, "spending");
+  const exceededHalf = budget - spending < budget * 0.5;
+  if (exceededHalf) {
+    addNotification(uid, planId, {
+      msg: "You exceeded half your budget!",
+      createdAt: new Date(),
+    });
+  }
+}
+
 module.exports = {
   addPlan,
   deletePlan,
@@ -145,5 +157,6 @@ module.exports = {
   getUserPlans,
   getNumberOfPlans,
   getField,
-  updateBudget,
+  updateSpending,
+  checkBudgetAndNotify,
 };

@@ -31,6 +31,7 @@ plansRouter.post("/add", async (req, res) => {
   const response = await addPlan(uid, {
     name,
     budget,
+    spending: 0,
     createdAt: date,
   });
   if (response) {
@@ -73,8 +74,12 @@ plansRouter.post("/update", async (req, res) => {
 });
 plansRouter.post("/field", async (req, res) => {
   const { uid, field, planId } = req.body;
-  console.log(uid, field, planId);
-
+  if (field == "budget") {
+    const budget = await getField(uid, planId, "budget");
+    const spending = await getField(uid, planId, "spending");
+    res.json({ budget, spending });
+    return;
+  }
   const response = await getField(uid, planId, field);
   if (response) {
     res.json(response);
