@@ -180,24 +180,6 @@ describe("Categories Test Cases", () => {
 });
 
 describe("Expenses Test Cases", () => {
-  test("add expense", async () => {
-    const body = {
-      planId: planId,
-      uid: uid,
-      categoryId: categoryId,
-      category: "category",
-      name: "expense",
-      amount: 10,
-    };
-    const request = await fetch(`${API}/expenses/add`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
-    const status = await request.json();
-    expenseId = status;
-    expect(status.length).toBe(20);
-  });
   test("add expense failed", async () => {
     const body = {
       planId: planId,
@@ -214,13 +196,32 @@ describe("Expenses Test Cases", () => {
 
     expect(status.msg).toBe("invalid");
   });
+  test("add expense", async () => {
+    const body = {
+      planId: planId,
+      uid: uid,
+      categoryId: categoryId,
+      category: "category",
+      name: "expense",
+      amount: 100,
+    };
+    const request = await fetch(`${API}/expenses/add`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const status = await request.json();
+    expenseId = status;
+    expect(status.length).toBe(20);
+  });
+
   test("update expense", async () => {
     const body = {
       planId: planId,
       uid: uid,
       categoryId: categoryId,
       expenseId: expenseId,
-      updateFields: { name: "new", amount: 100 },
+      updateFields: { name: "new", amount: 200 },
     };
     const request = await fetch(`${API}/expenses/update`, {
       method: "POST",

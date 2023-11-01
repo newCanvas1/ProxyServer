@@ -1,8 +1,8 @@
 const express = require("express");
 const app = express();
 const port = 3000;
-const DELAY_ENABLED = false;
-const DELAY = 1; // in seconds
+const DELAY_ENABLED = true;
+const DELAY = 0; // in seconds
 const expensesRouter = require("./routers/expenses");
 const notificationsRouter = require("./routers/notifications");
 const plansRouter = require("./routers/plans");

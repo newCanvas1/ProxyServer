@@ -6,9 +6,10 @@ const {
   addExpense,
   deleteExpense,
   updateExpense,
+  getExpenseAmount,
 } = require("../dbFunctions/expenses");
 const { updateDoc, doc } = require("firebase/firestore");
-const { getField } = require("../dbFunctions/plans");
+const { getField, updateBudget } = require("../dbFunctions/plans");
 const { db } = require("../firebaseConfig");
 
 const expensesRouter = express.Router();
@@ -64,6 +65,7 @@ expensesRouter.post("/add", async (req, res) => {
     setRecentExpenses([expense], uid, planId);
   }
   if (response) {
+    updateBudget(uid, planId, amount, "decrement");
     res.json(response);
   } else {
     res.json({ msg: "invalid" });
@@ -71,8 +73,15 @@ expensesRouter.post("/add", async (req, res) => {
 });
 expensesRouter.post("/delete", async (req, res) => {
   const { uid, expenseId, planId, categoryId } = req.body;
+  const amount = await getExpenseAmount(uid, planId, categoryId, expenseId);
+  console.log(amount, "Deleted amount");
+  if (!amount) {
+    res.json({ msg: "invalid" });
+    return;
+  }
+  updateBudget(uid, planId, parseFloat(amount), "increment");
+
   const response = await deleteExpense(uid, planId, categoryId, expenseId);
-  // updateBudget(uid, planId, amount, "increment");
   if (response) {
     res.json({ msg: "deleted" });
   } else {
@@ -86,6 +95,8 @@ expensesRouter.post("/update", async (req, res) => {
     res.json({ msg: "invalid" });
     return;
   }
+  const amount = await getExpenseAmount(uid, planId, categoryId, expenseId);
+
   const response = await updateExpense(
     uid,
     planId,
@@ -93,7 +104,28 @@ expensesRouter.post("/update", async (req, res) => {
     expenseId,
     updateFields
   );
+
   if (response) {
+    if (amount) {
+      if (updateFields.amount < amount) {
+        updateBudget(
+          uid,
+          planId,
+          parseFloat(amount) - updateFields.amount,
+          "increment"
+        );
+      } else {
+        updateBudget(
+          uid,
+          planId,
+          updateFields.amount - parseFloat(amount),
+          "decrement"
+        );
+      }
+    } else {
+      res.json({ msg: "invalid" });
+      return;
+    }
     res.json({ msg: "updated" });
   } else {
     res.json({ msg: "invalid" });

@@ -145,4 +145,5 @@ module.exports = {
   getUserPlans,
   getNumberOfPlans,
   getField,
+  updateBudget,
 };

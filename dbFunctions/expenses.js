@@ -9,6 +9,7 @@ const {
   deleteDoc,
   addDoc,
   where,
+  getDoc,
 } = require("../firebaseConfig");
 async function deleteExpense(uid, planId, categoryId, expenseId) {
   try {
@@ -44,7 +45,7 @@ async function updateExpense(uid, planId, categoryId, expenseId, updateFields) {
       "Expenses",
       expenseId
     );
- await updateDoc(ref, {
+    await updateDoc(ref, {
       ...updateFields,
     });
     return true;
@@ -148,6 +149,30 @@ async function addExpense(uid, planId, categoryId, expense) {
   }
 }
 
+async function getExpenseAmount(uid, planId, categoryId, expenseId) {
+  try {
+    const routinesQuery = 
+      doc(
+        db,
+        "User",
+        uid,
+        "Plans",
+        planId,
+        "Categories",
+        categoryId,
+        "Expenses",
+        expenseId
+      )
+
+    const routinesQuerySnapshot = await getDoc(routinesQuery);
+    const amount = routinesQuerySnapshot.data().amount;
+
+    return amount;
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
+}
 module.exports = {
   addExpense,
   getExpenses,
@@ -155,4 +180,5 @@ module.exports = {
   getExpensesByField,
   deleteExpense,
   updateExpense,
+  getExpenseAmount,
 };
