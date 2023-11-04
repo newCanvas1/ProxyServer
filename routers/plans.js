@@ -24,8 +24,8 @@ plansRouter.post("/", async (req, res) => {
 plansRouter.post("/add", async (req, res) => {
   let { plan, uid } = req.body;
   // if any of plan properties is empty, retun invalid
-  const { name, budget,currency } = plan;
-  if (name == "" || budget == "", currency == "") {
+  const { name, budget, currency } = plan;
+  if ((name == "" || budget == "", currency == "")) {
     res.json({ msg: "invalid" });
     return;
   }
@@ -65,10 +65,17 @@ plansRouter.post("/delete", async (req, res) => {
 
 plansRouter.post("/update", async (req, res) => {
   const { uid, updateFields, planId } = req.body;
-  if (updateFields.name == "" || updateFields.budget == "") {
+  console.log(updateFields);
+
+  if (
+    updateFields.name == "" ||
+    updateFields.budget == "" ||
+    updateFields.currency == ""
+  ) {
     res.json({ msg: "invalid" });
     return;
   }
+
   const response = await updatePlan(uid, updateFields, planId);
   console.log(response, "updated");
   res.json({ msg: "updated" });
@@ -80,7 +87,7 @@ plansRouter.post("/field", async (req, res) => {
     const spending = await getField(uid, planId, "spending");
     const currency = await getField(uid, planId, "currency");
 
-    res.json({ budget, spending,currency });
+    res.json({ budget, spending, currency });
     return;
   }
   const response = await getField(uid, planId, field);

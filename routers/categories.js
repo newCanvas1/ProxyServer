@@ -59,8 +59,8 @@ categoriesRouter.post("/delete", async (req, res) => {
 categoriesRouter.post("/update", async (req, res) => {
   const { uid, categoryId, updateFields, planId } = req.body;
   console.log(uid, categoryId, updateFields, planId);
-  if (updateFields.name == "" || updateFields.icon == "") {
-    res.status(400).json({ msg: "invalid" });
+  if (updateFields.name == ""||updateFields.name == undefined ) {
+    res.json({ msg: "invalid" });
     return;
   }
   const response = await updateCategory(uid, planId, categoryId, updateFields);
