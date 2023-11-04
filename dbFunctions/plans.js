@@ -95,7 +95,7 @@ async function getUserPlans(uid) {
     const IDQuerySnapshot = await getDocs(planIDQuery);
     if (IDQuerySnapshot) {
       IDQuerySnapshot.forEach((doc) => {
-        list.push({ name: doc.data().name, id: doc.id });
+        list.push({ ...doc.data(), id: doc.id });
       });
     } else {
       return false;

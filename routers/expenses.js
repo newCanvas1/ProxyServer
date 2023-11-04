@@ -14,15 +14,14 @@ const { db } = require("../firebaseConfig");
 
 const expensesRouter = express.Router();
 expensesRouter.post("/", async (req, res) => {
-  const { uid, planId, categoryId } = req.body;
-  const expenses = await getExpenses(uid, planId, categoryId);
-  console.log(expenses);
+  const { uid, planId, categoryId, lastDocument } = req.body;
+  const expenses = await getExpenses(uid, planId, categoryId, lastDocument);
+  console.log(expenses[expenses.length - 1]);
   res.json(expenses);
 });
 expensesRouter.get("/between", async (req, res) => {
   const { uid, planId, categoryId } = req.body;
   const expenses = await getExpensesBetweenDates(uid, planId, categoryId);
-  console.log(expenses);
   res.json(expenses);
 });
 expensesRouter.get("/field", async (req, res) => {
@@ -34,7 +33,6 @@ expensesRouter.get("/field", async (req, res) => {
     field,
     value
   );
-  console.log(expenses);
   res.json(expenses);
 });
 expensesRouter.post("/add", async (req, res) => {
@@ -110,14 +108,14 @@ expensesRouter.post("/update", async (req, res) => {
         updateSpending(
           uid,
           planId,
-          parseFloat(amount) - updateFields.amount,
+          parseFloat(amount) - parseFloat(updateFields.amount),
           "decrement"
         );
       } else {
         updateSpending(
           uid,
           planId,
-          updateFields.amount - parseFloat(amount),
+          parseFloat(updateFields.amount) - parseFloat(amount),
           "increment"
         );
       }

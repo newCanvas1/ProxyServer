@@ -22,15 +22,16 @@ plansRouter.post("/", async (req, res) => {
 });
 
 plansRouter.post("/add", async (req, res) => {
-  let { name, budget, uid } = req.body;
-  if (name == "" || budget == "") {
+  let { plan, uid } = req.body;
+  // if any of plan properties is empty, retun invalid
+  const { name, budget,currency } = plan;
+  if (name == "" || budget == "", currency == "") {
     res.json({ msg: "invalid" });
     return;
   }
   const date = new Date();
   const response = await addPlan(uid, {
-    name,
-    budget,
+    ...plan,
     spending: 0,
     createdAt: date,
   });
@@ -77,7 +78,9 @@ plansRouter.post("/field", async (req, res) => {
   if (field == "budget") {
     const budget = await getField(uid, planId, "budget");
     const spending = await getField(uid, planId, "spending");
-    res.json({ budget, spending });
+    const currency = await getField(uid, planId, "currency");
+
+    res.json({ budget, spending,currency });
     return;
   }
   const response = await getField(uid, planId, field);

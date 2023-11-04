@@ -44,7 +44,7 @@ async function addCategory(uid, planId, category) {
 async function deleteCategory(uid, planId, categoryId) {
   try {
     const ref = doc(db, "User", uid, "Plans", planId, "Categories", categoryId);
- await deleteDoc(ref).catch((err) => {
+    await deleteDoc(ref).catch((err) => {
       console.log(err);
       return false;
     });
@@ -57,7 +57,7 @@ async function deleteCategory(uid, planId, categoryId) {
 async function updateCategory(uid, planId, categoryId, updateFields) {
   try {
     const ref = doc(db, "User", uid, "Plans", planId, "Categories", categoryId);
- updateDoc(ref, {
+    updateDoc(ref, {
       ...updateFields,
     }).catch((err) => {
       console.log(err);

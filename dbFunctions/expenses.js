@@ -1,6 +1,6 @@
+const { limit, startAfter ,query} = require("firebase/firestore");
 const {
   collection,
-  query,
   getDocs,
   doc,
   orderBy,
@@ -55,27 +55,41 @@ async function updateExpense(uid, planId, categoryId, expenseId, updateFields) {
   }
 }
 
-async function getExpenses(uid, planId, categoryId) {
+async function getExpenses(uid, planId, categoryId, lastDocument) {
   let list = [];
-  const routinesQuery = query(
-    collection(
-      db,
-      "User",
-      uid,
-      "Plans",
-      planId,
-      "Categories",
-      categoryId,
-      "Expenses"
-    ),
-    orderBy("createdAt", "desc")
+  const LIMIT = 7;
+  let routinesQuery = collection(
+    db,
+    "User",
+    uid,
+    "Plans",
+    planId,
+    "Categories",
+    categoryId,
+    "Expenses"
   );
+
+  if (lastDocument) {
+    console.log("Using startAfter:", lastDocument.createdAt.seconds); // Logging the startAfter document
+
+    routinesQuery = query(
+      routinesQuery,
+      orderBy("createdAt", "desc"),
+      startAfter(new Date(lastDocument.createdAt.seconds * 1000)),
+      limit(LIMIT) // Adjust the limit as per your requirement
+    );
+  } else {
+    routinesQuery = query(
+      routinesQuery,
+      orderBy("createdAt", "desc"),
+      limit(LIMIT) // Adjust the limit as per your requirement
+    );
+  }
 
   const routinesQuerySnapshot = await getDocs(routinesQuery);
   routinesQuerySnapshot.forEach((doc) => {
     list.push({ ...doc.data(), id: doc.id });
   });
-  console.log(list);
   return list;
 }
 async function getExpensesBetweenDates(uid, planId, categoryId) {
@@ -149,25 +163,22 @@ async function addExpense(uid, planId, categoryId, expense) {
   }
 }
 
-
 async function getExpenseAmount(uid, planId, categoryId, expenseId) {
   try {
-    const routinesQuery = 
-      doc(
-        db,
-        "User",
-        uid,
-        "Plans",
-        planId,
-        "Categories",
-        categoryId,
-        "Expenses",
-        expenseId
-      )
+    const routinesQuery = doc(
+      db,
+      "User",
+      uid,
+      "Plans",
+      planId,
+      "Categories",
+      categoryId,
+      "Expenses",
+      expenseId
+    );
 
     const routinesQuerySnapshot = await getDoc(routinesQuery);
     const amount = routinesQuerySnapshot.data().amount;
-
     return amount;
   } catch (error) {
     console.log(error);
