@@ -23,6 +23,9 @@ if (DELAY_ENABLED) {
 }
 
 // Define a route
+app.get("/", (req, res) => {
+  res.send("Hello World!");
+});
 app.use("/notifications", notificationsRouter);
 app.use("/expenses", expensesRouter);
 app.use("/plans", plansRouter);

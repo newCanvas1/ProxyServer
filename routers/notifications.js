@@ -3,6 +3,8 @@ const {
   getNotifications,
   addNotification,
   deleteNotification,
+  readNotification,
+  readNotificationCount,
 } = require("../dbFunctions/notifications");
 const notificationsRouter = express.Router();
 notificationsRouter.post("/", async (req, res) => {
@@ -30,6 +32,27 @@ notificationsRouter.post("/delete", async (req, res) => {
   }
 });
 
+notificationsRouter.post("/read", async (req, res) => {
+  const { uid, planId, notificationId } = req.body;
+  console.log(uid, planId, notificationId);
+  const response = await readNotification(uid, planId, notificationId);
+  if (response) {
+    res.json({ msg: "read" });
+  } else {
+    res.json({ msg: "invalid" });
+  }
+});
+notificationsRouter.post("/readCount", async (req, res) => {
+  const { uid, planId, notificationId } = req.body;
+  console.log(uid, planId, notificationId);
+  const response = await readNotificationCount(uid, planId);
+  if (response) {
+    res.json({ count:response });
+  } else {
+    res.json({ msg: "invalid" });
+  }
+});
+
 notificationsRouter.post("/add", async (req, res) => {
   let { uid, planId, message, importance } = req.body;
   if (message == "" || importance == "") {
@@ -39,6 +62,7 @@ notificationsRouter.post("/add", async (req, res) => {
   const notification = {
     message: message,
     importance: importance,
+    isRead: false,
     createdAt: new Date(),
   };
   const response = await addNotification(uid, planId, notification);

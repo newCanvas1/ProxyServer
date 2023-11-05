@@ -144,7 +144,10 @@ async function checkBudgetAndNotify(uid, planId) {
   const exceededHalf = budget - spending < budget * 0.5;
   if (exceededHalf) {
     addNotification(uid, planId, {
-      msg: "You exceeded half your budget!",
+      message: "You exceeded half your budget!",
+      importance: "high",
+      isRead: false,
+
       createdAt: new Date(),
     });
   }
