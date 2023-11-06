@@ -6,13 +6,15 @@ const {
   updateGoal,
   getGoalField,
 } = require("../dbFunctions/goals");
+
 const { updateDoc } = require("firebase/firestore");
 const goalsRouter = express.Router();
-goalsRouter.post("/", async (req, res) => {
-  const { uid, planId } = req.body;
-  const plans = await getUserGoals(uid, planId);
-  if (plans) {
-    res.json(plans);
+
+goalsRouter.get("/get-goals/:uid/:planId", async (req, res) => {
+  const { uid, planId } = req.params;
+  const goals = await getUserGoals(uid, planId);
+  if (goals) {
+    res.json({ goals: goals });
   } else {
     console.log("Plans get failed");
     res.json({ msg: "invalid" });
@@ -20,25 +22,20 @@ goalsRouter.post("/", async (req, res) => {
 });
 
 goalsRouter.post("/add", async (req, res) => {
-  let { name, amount, endDate, uid, planId } = req.body;
-  if (name == "" || amount == "" || endDate == "") {
-    res.json({ msg: "invalid" });
-    return;
-  }
+  let { goalID, goalName, goalCoat, desiredDate, uid, planId } = req.body;
   const date = new Date();
   const response = await addGoal(uid, planId, {
-    name,
-    amount,
-    endDate,
+    goalID,
+    goalName,
+    goalCoat,
+    desiredDate,
     createdAt: date,
   });
   if (response) {
-    console.log("Response is", response, uid);
-
     res.json(response);
     console.log(response, "has been added");
   } else {
-    console.log("Addition failed");
+    console.log("goal addition failed");
     res.json({ msg: "invalid" });
   }
 });
@@ -62,15 +59,16 @@ goalsRouter.post("/update", async (req, res) => {
     res.json({ msg: "invalid" });
     return;
   }
-  console.log(uid, planId, goalId, updateFields)
+  console.log(uid, planId, goalId, updateFields);
   const response = await updateGoal(uid, planId, goalId, updateFields);
-  console.log("HERE is",response)
+  console.log("HERE is", response);
   if (response) {
     res.json({ msg: "updated" });
   } else {
     res.json({ msg: "invalid" });
   }
 });
+
 goalsRouter.post("/field", async (req, res) => {
   const { uid, planId, goalId, field } = req.body;
   console.log(uid, field, planId);
