@@ -7,16 +7,14 @@ const {
   deleteExpense,
   updateExpense,
   getExpenseAmount,
+  getRecentExpenses,
 } = require("../dbFunctions/expenses");
-const { updateDoc, doc } = require("firebase/firestore");
-const { getField, updateSpending } = require("../dbFunctions/plans");
-const { db } = require("../firebaseConfig");
-
+const { updateSpending } = require("../dbFunctions/plans");
 const expensesRouter = express.Router();
 expensesRouter.post("/", async (req, res) => {
-  const { uid, planId, categoryId, lastDocument } = req.body;
-  const expenses = await getExpenses(uid, planId, categoryId, lastDocument);
-  console.log(expenses[expenses.length - 1]);
+  const { uid, planId, categoryId,order, lastDocument } = req.body;
+  const expenses = await getExpenses(uid, planId, categoryId,order, lastDocument);
+
   res.json(expenses);
 });
 expensesRouter.get("/between", async (req, res) => {
@@ -36,31 +34,21 @@ expensesRouter.get("/field", async (req, res) => {
   res.json(expenses);
 });
 expensesRouter.post("/add", async (req, res) => {
-  let { name, amount, uid, category, planId, categoryId } = req.body;
+  let { name, amount, uid, category, planId, categoryId, icon } = req.body;
   if (name == "" || amount == "") {
     res.status(400).send({ msg: "invalid" });
     return;
   }
-  const MAX = 5;
   const date = new Date();
   const expense = {
     name,
     amount,
-    category,
+    category: category.name,
+    categoryId,
     createdAt: date,
   };
-
   const response = await addExpense(uid, planId, categoryId, expense);
-  const recentList = await getField(uid, planId, "recentExpenses");
-  if (recentList) {
-    if (recentList.length == MAX) {
-      recentList.shift();
-    }
-    recentList.push(expense);
-    setRecentExpenses(recentList, uid, planId);
-  } else {
-    setRecentExpenses([expense], uid, planId);
-  }
+
   if (response) {
     await updateSpending(uid, planId, amount, "increment");
     res.json(response);
@@ -71,7 +59,7 @@ expensesRouter.post("/add", async (req, res) => {
 expensesRouter.post("/delete", async (req, res) => {
   const { uid, expenseId, planId, categoryId } = req.body;
   const amount = await getExpenseAmount(uid, planId, categoryId, expenseId);
-  console.log(amount, "Deleted amount");
+
   if (!amount) {
     res.json({ msg: "invalid" });
     return;
@@ -128,22 +116,12 @@ expensesRouter.post("/update", async (req, res) => {
     res.json({ msg: "invalid" });
   }
 });
-function setRecentExpenses(myArray, uid, planId) {
-  try {
-    const routinesQuery = doc(db, "User", uid, "Plans", planId);
 
-    // Create an array
+expensesRouter.post("/recent", async (req, res) => {
+  const { uid, planId } = req.body;
 
-    // Set the value of the array in Firebase
-    updateDoc(routinesQuery, { recentExpenses: myArray })
-      .then(function () {
-        console.log("Array added to Firebase successfully!");
-      })
-      .catch(function (error) {
-        console.error("Error adding array to Firebase: ", error);
-      });
-  } catch (error) {
-    console.log(error);
-  }
-}
+  const expenses = await getRecentExpenses(uid, planId, 10);
+  res.json(expenses);
+});
+
 module.exports = expensesRouter;

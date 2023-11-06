@@ -36,12 +36,10 @@ plansRouter.post("/add", async (req, res) => {
     createdAt: date,
   });
   if (response) {
-    console.log("Response is", response, uid);
     await updateUser(uid, { lastPlan: response }).catch((err) => {
       console.log(err);
     });
     res.json(response);
-    console.log(response, "has been added");
   } else {
     console.log("Addition failed");
     res.json({ msg: "invalid" });
@@ -54,7 +52,7 @@ plansRouter.post("/delete", async (req, res) => {
     res.json({ msg: "invalid" });
   } else {
     const response = await deletePlan(uid, planId);
-    console.log(response);
+
     if (response) {
       res.json({ msg: "deleted" });
     } else {
@@ -65,7 +63,6 @@ plansRouter.post("/delete", async (req, res) => {
 
 plansRouter.post("/update", async (req, res) => {
   const { uid, updateFields, planId } = req.body;
-  console.log(updateFields);
 
   if (
     updateFields.name == "" ||
@@ -77,7 +74,7 @@ plansRouter.post("/update", async (req, res) => {
   }
 
   const response = await updatePlan(uid, updateFields, planId);
-  console.log(response, "updated");
+
   res.json({ msg: "updated" });
 });
 plansRouter.post("/field", async (req, res) => {

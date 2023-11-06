@@ -34,7 +34,7 @@ notificationsRouter.post("/delete", async (req, res) => {
 
 notificationsRouter.post("/read", async (req, res) => {
   const { uid, planId, notificationId } = req.body;
-  console.log(uid, planId, notificationId);
+
   const response = await readNotification(uid, planId, notificationId);
   if (response) {
     res.json({ msg: "read" });
@@ -44,7 +44,7 @@ notificationsRouter.post("/read", async (req, res) => {
 });
 notificationsRouter.post("/readCount", async (req, res) => {
   const { uid, planId, notificationId } = req.body;
-  console.log(uid, planId, notificationId);
+
   const response = await readNotificationCount(uid, planId);
   if (response) {
     res.json({ count:response });

@@ -4,16 +4,16 @@ const {
   addCategory,
   deleteCategory,
   updateCategory,
+  getCategoriesAmount
 } = require("../dbFunctions/categories");
 
 const categoriesRouter = express.Router();
 categoriesRouter.post("/", async (req, res) => {
   const { uid, planId } = req.body;
-  console.log(uid, planId, "categories");
+
   const categories = await getCategories(uid, planId);
 
   if (categories) {
-    console.log(categories);
     res.json(categories);
   } else {
     console.log("categories get failed");
@@ -27,7 +27,6 @@ categoriesRouter.post("/add", async (req, res) => {
     res.status(400).json({ msg: "invalid" });
     return;
   }
-  console.log(name, icon, uid, planId);
 
   const date = new Date();
 
@@ -55,16 +54,29 @@ categoriesRouter.post("/delete", async (req, res) => {
     res.json({ msg: "invalid" });
   }
 });
+categoriesRouter.post("/all/amount", async (req, res) => {
+  const { uid, planId } = req.body;
+  if (uid == "" || planId == "") {
+    res.status(400).json({ msg: "invalid" });
+    return;
+  }
+  const response = await getCategoriesAmount(uid, planId);
 
+  if (response) {
+    res.json(response);
+  } else {
+    res.json({ msg: "invalid" });
+  }
+});
 categoriesRouter.post("/update", async (req, res) => {
   const { uid, categoryId, updateFields, planId } = req.body;
-  console.log(uid, categoryId, updateFields, planId);
-  if (updateFields.name == ""||updateFields.name == undefined ) {
+
+  if (updateFields.name == "" || updateFields.name == undefined) {
     res.json({ msg: "invalid" });
     return;
   }
   const response = await updateCategory(uid, planId, categoryId, updateFields);
-  console.log(response, "Hello");
+
   if (response) {
     res.json({ msg: "updated" });
   } else {

@@ -22,6 +22,7 @@ async function addPlan(uid, plan) {
 }
 async function updateSpending(uid, planId, value, type) {
   try {
+    console.log(uid, planId, value, type);
     const ref = doc(db, "User", uid, "Plans", planId);
     let newBudget = 0;
     const docSnap = await getDoc(ref);
@@ -33,6 +34,7 @@ async function updateSpending(uid, planId, value, type) {
       } else {
         newBudget = parseFloat(budget) + parseFloat(value);
       }
+
       updateDoc(ref, { spending: newBudget });
       checkBudgetAndNotify(uid, planId);
       return;
@@ -50,7 +52,7 @@ async function deletePlan(uid, planId) {
 
     await deleteDoc(ref)
       .then(async () => {
-        console.log("Plan deleted", planId);
+
         return true;
       })
       .catch((err) => {
@@ -89,7 +91,7 @@ async function getUserPlans(uid) {
   try {
     let list = [];
 
-    console.log(uid, "getUserPlans");
+
     const planIDQuery = query(collection(db, "User", uid, "Plans"));
 
     const IDQuerySnapshot = await getDocs(planIDQuery);

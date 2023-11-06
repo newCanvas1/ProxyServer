@@ -70,7 +70,7 @@ async function readNotificationCount(uid, planId) {
         count++;
       }
     });
-    console.log(count);
+
     return count;
   } catch (error) {
     console.log(error);
@@ -90,7 +90,7 @@ async function deleteNotification(uid, planId, notificationId) {
     );
     await deleteDoc(ref)
       .then(async () => {
-        console.log("Notification deleted", notificationId);
+
         return true;
       })
       .catch((err) => {
