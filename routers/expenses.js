@@ -21,14 +21,13 @@ expensesRouter.post("/", async (req, res) => {
     order,
     lastDocument
   );
+  if (expenses) {
+    res.json({ success: true, data: expenses });
+  } else {
+    res.json({ success: false });
+  }
+});
 
-  res.json(expenses);
-});
-expensesRouter.get("/between", async (req, res) => {
-  const { uid, planId, categoryId } = req.body;
-  const expenses = await getExpensesBetweenDates(uid, planId, categoryId);
-  res.json(expenses);
-});
 expensesRouter.post("/spending/thisWeek", async (req, res) => {
   const { uid, planId } = req.body;
   const expenses = await getAmountSpentThisWeekPerDay(uid, planId);
@@ -47,12 +46,16 @@ expensesRouter.get("/field", async (req, res) => {
     field,
     value
   );
-  res.json(expenses);
+  if (expenses) {
+    res.json({ success: true, data: expenses });
+  } else {
+    res.json({ success: false });
+  }
 });
 expensesRouter.post("/add", async (req, res) => {
   let { name, amount, uid, category, planId, categoryId, icon } = req.body;
   if (name == "" || amount == "" || isNaN(amount)) {
-    res.status(400).send({ msg: "invalid" });
+    res.status(400).send({ success: false });
     return;
   }
   const date = new Date();
@@ -66,11 +69,10 @@ expensesRouter.post("/add", async (req, res) => {
   const response = await addExpense(uid, planId, categoryId, expense);
 
   if (response) {
-
     await updateSpending(uid, planId, amount, "increment");
-    res.json(response);
+    res.json({ success: true, data: response });
   } else {
-    res.json({ msg: "invalid" });
+    res.json({ success: false });
   }
 });
 expensesRouter.post("/delete", async (req, res) => {
@@ -78,23 +80,23 @@ expensesRouter.post("/delete", async (req, res) => {
   const amount = await getExpenseAmount(uid, planId, categoryId, expenseId);
 
   if (!amount) {
-    res.json({ msg: "invalid" });
+    res.json({ success: false });
     return;
   }
   updateSpending(uid, planId, parseFloat(amount), "decrement");
 
   const response = await deleteExpense(uid, planId, categoryId, expenseId);
   if (response) {
-    res.json({ msg: "deleted" });
+    res.json({ success: true });
   } else {
-    res.json({ msg: "invalid" });
+    res.json({ success: false });
   }
 });
 
 expensesRouter.post("/update", async (req, res) => {
   const { uid, expenseId, updateFields, planId, categoryId } = req.body;
   if (updateFields.name == "" || updateFields.amount == "") {
-    res.json({ msg: "invalid" });
+    res.json({ success: false });
     return;
   }
   const amount = await getExpenseAmount(uid, planId, categoryId, expenseId);
@@ -125,12 +127,12 @@ expensesRouter.post("/update", async (req, res) => {
         );
       }
     } else {
-      res.json({ msg: "invalid" });
+      res.json({ success: false });
       return;
     }
-    res.json({ msg: "updated" });
+    res.json({ success: true });
   } else {
-    res.json({ msg: "invalid" });
+    res.json({ success: false });
   }
 });
 
@@ -138,7 +140,11 @@ expensesRouter.post("/recent", async (req, res) => {
   const { uid, planId } = req.body;
 
   const expenses = await getRecentExpenses(uid, planId, 10);
-  res.json(expenses);
+  if (expenses) {
+    res.json({ success: true, data: expenses });
+  } else {
+    res.json({ success: false });
+  }
 });
 
 module.exports = expensesRouter;

@@ -26,7 +26,7 @@ plansRouter.post("/add", async (req, res) => {
   // if any of plan properties is empty, retun invalid
   const { name, budget, currency } = plan;
   if ((name == "" || budget == "", currency == "")) {
-    res.json({ msg: "invalid" });
+    res.json({ success: false });
     return;
   }
   const date = new Date();
@@ -39,24 +39,23 @@ plansRouter.post("/add", async (req, res) => {
     await updateUser(uid, { lastPlan: response }).catch((err) => {
       console.log(err);
     });
-    res.json(response);
+    res.json({ success: true, data: response });
   } else {
     console.log("Addition failed");
-    res.json({ msg: "invalid" });
+    res.json({ success: false });
   }
 });
 plansRouter.post("/delete", async (req, res) => {
   const { uid, planId } = req.body;
   const numOfPlans = await getNumberOfPlans(uid);
   if (numOfPlans == 1) {
-    res.json({ msg: "invalid" });
+    res.json({ success: false });
   } else {
     const response = await deletePlan(uid, planId);
-
     if (response) {
-      res.json({ msg: "deleted" });
+      res.json({ success: true });
     } else {
-      res.json({ msg: "invalid" });
+      res.json({ success: false });
     }
   }
 });
@@ -69,13 +68,16 @@ plansRouter.post("/update", async (req, res) => {
     updateFields.budget == "" ||
     updateFields.currency == ""
   ) {
-    res.json({ msg: "invalid" });
+    res.json({ success: false });
     return;
   }
 
   const response = await updatePlan(uid, updateFields, planId);
-
-  res.json({ msg: "updated" });
+  if (response) {
+    res.json({ success: true });
+  } else {
+    res.json({ success: false });
+  }
 });
 plansRouter.post("/field", async (req, res) => {
   const { uid, field, planId } = req.body;
