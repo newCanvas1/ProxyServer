@@ -6,6 +6,7 @@ const {
   updateCategory,
   getCategoriesAmount,
   getCategoryInfo,
+  getAmountSpentThisWeekPerDayOfCategory,
 } = require("../dbFunctions/categories");
 
 const categoriesRouter = express.Router();
@@ -18,6 +19,19 @@ categoriesRouter.post("/", async (req, res) => {
     res.json({ success: true, data: categories });
   } else {
     console.log("categories get failed");
+    res.json({ success: false });
+  }
+});
+categoriesRouter.post("/spending/thisWeek", async (req, res) => {
+  const { uid, planId, categoryId } = req.body;
+  const expenses = await getAmountSpentThisWeekPerDayOfCategory(
+    uid,
+    planId,
+    categoryId
+  );
+  if (expenses) {
+    res.json({ success: true, data: expenses });
+  } else {
     res.json({ success: false });
   }
 });
