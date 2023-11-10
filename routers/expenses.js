@@ -22,6 +22,8 @@ expensesRouter.post("/", async (req, res) => {
     lastDocument
   );
   if (expenses) {
+    console.log(expenses);
+
     res.json({ success: true, data: expenses });
   } else {
     res.json({ success: false });

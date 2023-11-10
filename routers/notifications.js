@@ -47,7 +47,7 @@ notificationsRouter.post("/readCount", async (req, res) => {
 
   const response = await readNotificationCount(uid, planId);
   if (response) {
-    console.log(response);
+
     res.json({ success: true, data: response });
   } else {
     res.json({ success: false });

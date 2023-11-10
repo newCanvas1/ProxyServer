@@ -39,8 +39,6 @@ async function getAmountSpentThisWeekPerDay(uid, planId) {
     endOfWeek.setHours(23, 59, 59, 999);
     endOfWeek.setHours(endOfWeek.getHours() + 3); // add 3 hours for UTC+3
 
-    console.log(startOfWeek, endOfWeek);
-
     // this list should have week days as properties and the value should be the sum of expenses of that day
     let list = {};
     const routinesQuery = query(
@@ -51,7 +49,6 @@ async function getAmountSpentThisWeekPerDay(uid, planId) {
 
     const routinesQuerySnapshot = await getDocs(routinesQuery);
     routinesQuerySnapshot.forEach((doc) => {
-      console.log(doc.data());
       const date = new Date(doc.data().createdAt.seconds * 1000);
       const day = date.getDay();
       // if the day is already in the list, add the amount to the existing amount
@@ -91,6 +88,23 @@ async function updateExpense(uid, planId, categoryId, expenseId, updateFields) {
     await updateDoc(ref, {
       ...updateFields,
     });
+    const categoryLimitHasBeenExceeded = await catgeoryLimitExceeded(
+      uid,
+      planId,
+      categoryId,
+      updateFields.amount
+    );
+
+    if (categoryLimitHasBeenExceeded) {
+      
+      const message = {
+        message: `You have exceeded the limit of ${updateFields.category}`,
+        importance: "high",
+        isRead: false,
+        createdAt: new Date(),
+      };
+      addNotification(uid, planId, message);
+    }
     return true;
   } catch (error) {
     console.log(error);
@@ -251,7 +265,6 @@ async function getTotalExpensesOfCategory(uid, planId, categoryId) {
     const expensesQuerySnapshot = await getDocs(expensesQuery);
     let total = 0;
     expensesQuerySnapshot.forEach((doc) => {
-      console.log(doc.data());
       total += parseFloat(doc.data().amount);
     });
     return total;
@@ -274,13 +287,14 @@ async function catgeoryLimitExceeded(uid, planId, categoryId, amount) {
     return false;
   }
 
-  // add the new expense amount to that total
-  // total += parseFloat(amount);
+  const oldTotal = total - amount;
 
+  // if the total is already greater than the limit, return true
+  if (oldTotal > limit) {
+    return false;
+  }
   // check if the amount is greater than the limit
   if (total > limit) {
-    console.log("limit exceeded", total, limit);
-
     // if yes, return false
 
     return true;

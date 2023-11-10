@@ -58,9 +58,9 @@ goalsRouter.post("/update", async (req, res) => {
     res.json({ success: false });
     return;
   }
-  console.log(uid, planId, goalId, updateFields);
+
   const response = await updateGoal(uid, planId, goalId, updateFields);
-  console.log("HERE is", response);
+
   if (response) {
     res.json({ success: true });
   } else {
@@ -69,7 +69,7 @@ goalsRouter.post("/update", async (req, res) => {
 });
 goalsRouter.post("/field", async (req, res) => {
   const { uid, planId, goalId, field } = req.body;
-  console.log(uid, field, planId);
+
 
   const response = await getGoalField(uid, planId, goalId, field);
   if (response) {

@@ -25,7 +25,7 @@ async function deleteGoal(uid, planId, goalId) {
 
     await deleteDoc(ref)
       .then(async () => {
-        console.log("Goal deleted", goalId);
+
         return true;
       })
       .catch((err) => {
@@ -42,7 +42,7 @@ async function getUserGoals(uid, planId) {
   try {
     let list = [];
 
-    console.log(uid, "getUserPlans");
+
     const planIDQuery = query(
       collection(db, "User", uid, "Plans", planId, "Goals")
     );

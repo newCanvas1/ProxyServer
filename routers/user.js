@@ -14,9 +14,9 @@ userRouter.post("/", async (req, res) => {
 
 userRouter.post("/update", async (req, res) => {
   const { uid, updateFields } = req.body;
-  console.log(uid, updateFields);
+
   const response = await updateUser(uid, updateFields);
-  console.log(response);
+
   res.json(1);
 });
 module.exports = userRouter;

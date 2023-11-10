@@ -152,7 +152,7 @@ async function getAmountSpentPerDayLastWeek(uid, planId) {
     const date = new Date();
     const now = new Date();
     date.setDate(currentDate.getDate() - 7);
-    console.log(date.toDateString());
+
     const routinesQuery = query(
       collection(db, "User", uid, "Plans", planId, "Expenses"),
       where("createdAt", ">=", date),

@@ -24,7 +24,7 @@ async function getCategoriesAmount(uid, planId) {
     );
     const categoriesQuerySnapshot = await getDocs(categoriesQuery);
     categoriesQuerySnapshot.forEach((doc) => {
-      console.log(doc.data().category);
+
       // for the expense category, make a property of that name, and increment the amount by the expense amount
       if (list[doc.data().category]) {
         list[doc.data().category] += parseFloat(doc.data().amount);
@@ -85,7 +85,7 @@ async function deleteExpensesOfCategory(uid, planId, categoryId) {
     const expensesQuerySnapshot = await getDocs(expensesQuery);
     expensesQuerySnapshot.forEach(async (doc) => {
       const amount = doc.data().amount;
-      console.log("amount", amount);
+
       amountOfDeleted += parseFloat(amount);
 
       const deleted = await deleteDoc(doc.ref).catch((err) => {
@@ -93,7 +93,7 @@ async function deleteExpensesOfCategory(uid, planId, categoryId) {
         return false;
       });
     });
-    console.log("amountOfDeleted", amountOfDeleted);
+
 
     await decrementSpending(uid, planId, amountOfDeleted);
     return true;
@@ -179,7 +179,7 @@ async function getAmountSpentThisWeekPerDayOfCategory(uid, planId, categoryId) {
     // set as end of the day
 
     endOfWeek.setHours(23, 59, 59, 999);
-    console.log(startOfWeek, endOfWeek);
+
 
     // this list should have week days as properties and the value should be the sum of expenses of that day
     let list = {};
@@ -192,7 +192,7 @@ async function getAmountSpentThisWeekPerDayOfCategory(uid, planId, categoryId) {
 
     const routinesQuerySnapshot = await getDocs(routinesQuery);
     routinesQuerySnapshot.forEach((doc) => {
-      console.log(doc.data());
+
       const date = new Date(doc.data().createdAt.seconds * 1000);
       const day = date.getDay();
       // if the day is already in the list, add the amount to the existing amount

@@ -22,21 +22,27 @@ async function addPlan(uid, plan) {
 }
 async function updateSpending(uid, planId, value, type) {
   try {
-    console.log(uid, planId, value, type);
     const ref = doc(db, "User", uid, "Plans", planId);
-    let newBudget = 0;
+    let newSpending = 0;
     const docSnap = await getDoc(ref);
     // if it exists
     if (docSnap.exists()) {
-      const budget = docSnap.data().spending;
+      const spending = docSnap.data().spending;
+      const budget = docSnap.data().budget;
+
       if (type == "decrement") {
-        newBudget = parseFloat(budget) - parseFloat(value);
+        newSpending = parseFloat(spending) - parseFloat(value);
       } else {
-        newBudget = parseFloat(budget) + parseFloat(value);
+        newSpending = parseFloat(spending) + parseFloat(value);
       }
 
-      updateDoc(ref, { spending: newBudget });
-      checkBudgetAndNotify(uid, planId);
+      updateDoc(ref, { spending: newSpending });
+      const isHalfReached = spending > budget * 0.5;
+
+      if (!isHalfReached) {
+        // if it is not reached, we check if it is now
+        checkBudgetAndNotify(uid, planId);
+      }
       return;
     } else {
       console.log("Document does not exist");
@@ -52,7 +58,6 @@ async function deletePlan(uid, planId) {
 
     await deleteDoc(ref)
       .then(async () => {
-
         return true;
       })
       .catch((err) => {
@@ -90,7 +95,6 @@ async function getField(uid, planId, field) {
 async function getUserPlans(uid) {
   try {
     let list = [];
-
 
     const planIDQuery = query(collection(db, "User", uid, "Plans"));
 
