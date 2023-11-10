@@ -15,10 +15,10 @@ notificationsRouter.post("/", async (req, res) => {
     if (notifications == 0) {
       res.json(false);
     } else {
-      res.json(notifications);
+      res.json({ success: true, data: notifications });
     }
   } catch (error) {
-    res.json({ msg: "invalid" });
+    res.json({ success: false });
     console.log(error);
   }
 });
@@ -26,37 +26,38 @@ notificationsRouter.post("/delete", async (req, res) => {
   const { uid, planId, notificationId } = req.body;
   const response = await deleteNotification(uid, planId, notificationId);
   if (response) {
-    res.json({ msg: "deleted" });
+    res.json({ success: true });
   } else {
-    res.json({ msg: "invalid" });
+    res.json({ success: false });
   }
 });
 
 notificationsRouter.post("/read", async (req, res) => {
   const { uid, planId, notificationId } = req.body;
-  console.log(uid, planId, notificationId);
+
   const response = await readNotification(uid, planId, notificationId);
   if (response) {
-    res.json({ msg: "read" });
+    res.json({ success: true });
   } else {
-    res.json({ msg: "invalid" });
+    res.json({ success: false });
   }
 });
 notificationsRouter.post("/readCount", async (req, res) => {
-  const { uid, planId, notificationId } = req.body;
-  console.log(uid, planId, notificationId);
+  const { uid, planId } = req.body;
+
   const response = await readNotificationCount(uid, planId);
   if (response) {
-    res.json({ count:response });
+    console.log(response);
+    res.json({ success: true, data: response });
   } else {
-    res.json({ msg: "invalid" });
+    res.json({ success: false });
   }
 });
 
 notificationsRouter.post("/add", async (req, res) => {
   let { uid, planId, message, importance } = req.body;
   if (message == "" || importance == "") {
-    res.status(400).json({ msg: "invalid" });
+    res.status(400).json({ success: false });
     return;
   }
   const notification = {
@@ -67,9 +68,9 @@ notificationsRouter.post("/add", async (req, res) => {
   };
   const response = await addNotification(uid, planId, notification);
   if (response) {
-    res.json(response);
+    res.json({ success: true, data: response });
   } else {
-    res.json({ msg: "invalid" });
+    res.json({ success: false });
   }
 });
 module.exports = notificationsRouter;

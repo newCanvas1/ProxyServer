@@ -6,11 +6,9 @@ userRouter.post("/", async (req, res) => {
 
   const user = await getUserData(uid);
   if (user) {
-    res.json(user);
+    res.json({ success: true, data: user });
   } else {
-    console.log("User get failed");
-
-    res.json({ msg: "invalid" });
+    res.json({ success: false });
   }
 });
 

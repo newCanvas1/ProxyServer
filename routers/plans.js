@@ -23,10 +23,11 @@ plansRouter.post("/", async (req, res) => {
 
 plansRouter.post("/add", async (req, res) => {
   let { plan, uid } = req.body;
+  console.log(plan);
   // if any of plan properties is empty, retun invalid
   const { name, budget, currency } = plan;
   if ((name == "" || budget == "", currency == "")) {
-    res.json({ msg: "invalid" });
+    res.json({ success: false });
     return;
   }
   const date = new Date();
@@ -36,49 +37,48 @@ plansRouter.post("/add", async (req, res) => {
     createdAt: date,
   });
   if (response) {
-    console.log("Response is", response, uid);
     await updateUser(uid, { lastPlan: response }).catch((err) => {
       console.log(err);
     });
-    res.json(response);
-    console.log(response, "has been added");
+    res.json({ success: true, data: response });
   } else {
     console.log("Addition failed");
-    res.json({ msg: "invalid" });
+    res.json({ success: false });
   }
 });
 plansRouter.post("/delete", async (req, res) => {
   const { uid, planId } = req.body;
   const numOfPlans = await getNumberOfPlans(uid);
   if (numOfPlans == 1) {
-    res.json({ msg: "invalid" });
+    res.json({ success: false });
   } else {
     const response = await deletePlan(uid, planId);
-    console.log(response);
     if (response) {
-      res.json({ msg: "deleted" });
+      res.json({ success: true });
     } else {
-      res.json({ msg: "invalid" });
+      res.json({ success: false });
     }
   }
 });
 
 plansRouter.post("/update", async (req, res) => {
   const { uid, updateFields, planId } = req.body;
-  console.log(updateFields);
 
   if (
     updateFields.name == "" ||
     updateFields.budget == "" ||
     updateFields.currency == ""
   ) {
-    res.json({ msg: "invalid" });
+    res.json({ success: false });
     return;
   }
 
   const response = await updatePlan(uid, updateFields, planId);
-  console.log(response, "updated");
-  res.json({ msg: "updated" });
+  if (response) {
+    res.json({ success: true });
+  } else {
+    res.json({ success: false });
+  }
 });
 plansRouter.post("/field", async (req, res) => {
   const { uid, field, planId } = req.body;

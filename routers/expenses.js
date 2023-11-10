@@ -7,22 +7,35 @@ const {
   deleteExpense,
   updateExpense,
   getExpenseAmount,
+  getRecentExpenses,
+  getAmountSpentThisWeekPerDay,
 } = require("../dbFunctions/expenses");
-const { updateDoc, doc } = require("firebase/firestore");
-const { getField, updateSpending } = require("../dbFunctions/plans");
-const { db } = require("../firebaseConfig");
-
+const { updateSpending } = require("../dbFunctions/plans");
 const expensesRouter = express.Router();
 expensesRouter.post("/", async (req, res) => {
-  const { uid, planId, categoryId, lastDocument } = req.body;
-  const expenses = await getExpenses(uid, planId, categoryId, lastDocument);
-  console.log(expenses[expenses.length - 1]);
-  res.json(expenses);
+  const { uid, planId, categoryId, order, lastDocument } = req.body;
+  const expenses = await getExpenses(
+    uid,
+    planId,
+    categoryId,
+    order,
+    lastDocument
+  );
+  if (expenses) {
+    res.json({ success: true, data: expenses });
+  } else {
+    res.json({ success: false });
+  }
 });
-expensesRouter.get("/between", async (req, res) => {
-  const { uid, planId, categoryId } = req.body;
-  const expenses = await getExpensesBetweenDates(uid, planId, categoryId);
-  res.json(expenses);
+
+expensesRouter.post("/spending/thisWeek", async (req, res) => {
+  const { uid, planId } = req.body;
+  const expenses = await getAmountSpentThisWeekPerDay(uid, planId);
+  if (expenses) {
+    res.json({ success: true, data: expenses });
+  } else {
+    res.json({ success: false });
+  }
 });
 expensesRouter.get("/field", async (req, res) => {
   const { uid, field, value, planId, categoryId } = req.body;
@@ -33,63 +46,57 @@ expensesRouter.get("/field", async (req, res) => {
     field,
     value
   );
-  res.json(expenses);
+  if (expenses) {
+    res.json({ success: true, data: expenses });
+  } else {
+    res.json({ success: false });
+  }
 });
 expensesRouter.post("/add", async (req, res) => {
-  let { name, amount, uid, category, planId, categoryId } = req.body;
-  if (name == "" || amount == "") {
-    res.status(400).send({ msg: "invalid" });
+  let { name, amount, uid, category, planId, categoryId, icon } = req.body;
+  if (name == "" || amount == "" || isNaN(amount)) {
+    res.status(400).send({ success: false });
     return;
   }
-  const MAX = 5;
   const date = new Date();
   const expense = {
     name,
     amount,
-    category,
+    category: category.name,
+    categoryId,
     createdAt: date,
   };
-
   const response = await addExpense(uid, planId, categoryId, expense);
-  const recentList = await getField(uid, planId, "recentExpenses");
-  if (recentList) {
-    if (recentList.length == MAX) {
-      recentList.shift();
-    }
-    recentList.push(expense);
-    setRecentExpenses(recentList, uid, planId);
-  } else {
-    setRecentExpenses([expense], uid, planId);
-  }
+
   if (response) {
     await updateSpending(uid, planId, amount, "increment");
-    res.json(response);
+    res.json({ success: true, data: response });
   } else {
-    res.json({ msg: "invalid" });
+    res.json({ success: false });
   }
 });
 expensesRouter.post("/delete", async (req, res) => {
   const { uid, expenseId, planId, categoryId } = req.body;
   const amount = await getExpenseAmount(uid, planId, categoryId, expenseId);
-  console.log(amount, "Deleted amount");
+
   if (!amount) {
-    res.json({ msg: "invalid" });
+    res.json({ success: false });
     return;
   }
   updateSpending(uid, planId, parseFloat(amount), "decrement");
 
   const response = await deleteExpense(uid, planId, categoryId, expenseId);
   if (response) {
-    res.json({ msg: "deleted" });
+    res.json({ success: true });
   } else {
-    res.json({ msg: "invalid" });
+    res.json({ success: false });
   }
 });
 
 expensesRouter.post("/update", async (req, res) => {
   const { uid, expenseId, updateFields, planId, categoryId } = req.body;
   if (updateFields.name == "" || updateFields.amount == "") {
-    res.json({ msg: "invalid" });
+    res.json({ success: false });
     return;
   }
   const amount = await getExpenseAmount(uid, planId, categoryId, expenseId);
@@ -120,30 +127,24 @@ expensesRouter.post("/update", async (req, res) => {
         );
       }
     } else {
-      res.json({ msg: "invalid" });
+      res.json({ success: false });
       return;
     }
-    res.json({ msg: "updated" });
+    res.json({ success: true });
   } else {
-    res.json({ msg: "invalid" });
+    res.json({ success: false });
   }
 });
-function setRecentExpenses(myArray, uid, planId) {
-  try {
-    const routinesQuery = doc(db, "User", uid, "Plans", planId);
 
-    // Create an array
+expensesRouter.post("/recent", async (req, res) => {
+  const { uid, planId } = req.body;
 
-    // Set the value of the array in Firebase
-    updateDoc(routinesQuery, { recentExpenses: myArray })
-      .then(function () {
-        console.log("Array added to Firebase successfully!");
-      })
-      .catch(function (error) {
-        console.error("Error adding array to Firebase: ", error);
-      });
-  } catch (error) {
-    console.log(error);
+  const expenses = await getRecentExpenses(uid, planId, 10);
+  if (expenses) {
+    res.json({ success: true, data: expenses });
+  } else {
+    res.json({ success: false });
   }
-}
+});
+
 module.exports = expensesRouter;
