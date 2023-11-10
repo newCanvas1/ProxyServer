@@ -139,6 +139,23 @@ async function updateCategory(uid, planId, categoryId, updateFields) {
     return false;
   }
 }
+async function getCategoryInfo(uid, planId, categoryId) {
+  let expensesCount = 0;
+  let expensesAmount = 0;
+
+  const expensesQuery = query(
+    collection(db, "User", uid, "Plans", planId, "Expenses"),
+    orderBy("createdAt", "desc"),
+    where("categoryId", "==", categoryId)
+  );
+  const expensesQuerySnapshot = await getDocs(expensesQuery);
+  expensesQuerySnapshot.forEach(async (doc) => {
+    expensesCount++;
+    const amount = doc.data().amount;
+    expensesAmount += parseFloat(amount);
+  });
+  return { expensesCount, expensesAmount };
+}
 
 module.exports = {
   addCategory,
@@ -146,4 +163,5 @@ module.exports = {
   deleteCategory,
   updateCategory,
   getCategoriesAmount,
+  getCategoryInfo,
 };

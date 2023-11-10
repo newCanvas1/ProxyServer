@@ -8,12 +8,19 @@ const {
   updateExpense,
   getExpenseAmount,
   getRecentExpenses,
+  getAmountSpentThisWeekPerDay,
 } = require("../dbFunctions/expenses");
 const { updateSpending } = require("../dbFunctions/plans");
 const expensesRouter = express.Router();
 expensesRouter.post("/", async (req, res) => {
-  const { uid, planId, categoryId,order, lastDocument } = req.body;
-  const expenses = await getExpenses(uid, planId, categoryId,order, lastDocument);
+  const { uid, planId, categoryId, order, lastDocument } = req.body;
+  const expenses = await getExpenses(
+    uid,
+    planId,
+    categoryId,
+    order,
+    lastDocument
+  );
 
   res.json(expenses);
 });
@@ -21,6 +28,15 @@ expensesRouter.get("/between", async (req, res) => {
   const { uid, planId, categoryId } = req.body;
   const expenses = await getExpensesBetweenDates(uid, planId, categoryId);
   res.json(expenses);
+});
+expensesRouter.post("/spending/thisWeek", async (req, res) => {
+  const { uid, planId } = req.body;
+  const expenses = await getAmountSpentThisWeekPerDay(uid, planId);
+  if (expenses) {
+    res.json({ success: true, data: expenses });
+  } else {
+    res.json({ success: false });
+  }
 });
 expensesRouter.get("/field", async (req, res) => {
   const { uid, field, value, planId, categoryId } = req.body;
@@ -35,7 +51,7 @@ expensesRouter.get("/field", async (req, res) => {
 });
 expensesRouter.post("/add", async (req, res) => {
   let { name, amount, uid, category, planId, categoryId, icon } = req.body;
-  if (name == "" || amount == "") {
+  if (name == "" || amount == "" || isNaN(amount)) {
     res.status(400).send({ msg: "invalid" });
     return;
   }
@@ -50,6 +66,7 @@ expensesRouter.post("/add", async (req, res) => {
   const response = await addExpense(uid, planId, categoryId, expense);
 
   if (response) {
+
     await updateSpending(uid, planId, amount, "increment");
     res.json(response);
   } else {

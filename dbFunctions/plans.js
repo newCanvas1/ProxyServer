@@ -147,9 +147,8 @@ async function checkBudgetAndNotify(uid, planId) {
   if (exceededHalf) {
     addNotification(uid, planId, {
       message: "You exceeded half your budget!",
-      importance: "high",
+      type: "warning",
       isRead: false,
-
       createdAt: new Date(),
     });
   }

@@ -4,7 +4,8 @@ const {
   addCategory,
   deleteCategory,
   updateCategory,
-  getCategoriesAmount
+  getCategoriesAmount,
+  getCategoryInfo
 } = require("../dbFunctions/categories");
 
 const categoriesRouter = express.Router();
@@ -22,8 +23,9 @@ categoriesRouter.post("/", async (req, res) => {
 });
 
 categoriesRouter.post("/add", async (req, res) => {
-  let { name, icon, uid, planId } = req.body;
-  if (name == "" || icon == "") {
+  let { name, icon, uid, planId, limit } = req.body;
+  console.log("limit", limit);
+  if (name == "" || icon == "" || uid == "" || planId == "") {
     res.status(400).json({ msg: "invalid" });
     return;
   }
@@ -33,6 +35,7 @@ categoriesRouter.post("/add", async (req, res) => {
   const response = await addCategory(uid, planId, {
     name,
     icon,
+    limit,
     createdAt: date,
   });
   if (response) {
@@ -68,13 +71,35 @@ categoriesRouter.post("/all/amount", async (req, res) => {
     res.json({ msg: "invalid" });
   }
 });
-categoriesRouter.post("/update", async (req, res) => {
-  const { uid, categoryId, updateFields, planId } = req.body;
 
-  if (updateFields.name == "" || updateFields.name == undefined) {
-    res.json({ msg: "invalid" });
+categoriesRouter.post("/info", async (req, res) => {
+  const { uid, planId ,categoryId} = req.body;
+  if (uid == "" || planId == "") {
+    res.status(400).json({ msg: "invalid" });
     return;
   }
+  const response = await getCategoryInfo(uid, planId,categoryId);
+
+  if (response) {
+    res.json(response);
+  } else {
+    res.json({ msg: "invalid" });
+  }
+});
+categoriesRouter.post("/update", async (req, res) => {
+  const { uid, categoryId, updateFields, planId } = req.body;
+  if (
+    uid == "" ||
+    planId == "" ||
+    categoryId == "" ||
+    updateFields.name == "" ||
+    isNaN(updateFields.limit) ||
+    updateFields.limit == ""
+  ) {
+    res.status(400).json({ msg: "invalid" });
+    return;
+  }
+
   const response = await updateCategory(uid, planId, categoryId, updateFields);
 
   if (response) {
