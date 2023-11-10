@@ -10,19 +10,18 @@ const { updateDoc } = require("firebase/firestore");
 const goalsRouter = express.Router();
 goalsRouter.post("/", async (req, res) => {
   const { uid, planId } = req.body;
-  const plans = await getUserGoals(uid, planId);
-  if (plans) {
-    res.json(plans);
+  const goals = await getUserGoals(uid, planId);
+  if (goals) {
+    res.json({ success: true, goals: goals });
   } else {
-    console.log("Plans get failed");
-    res.json({ msg: "invalid" });
+    res.json({ success: false, msg: "invalid" });
   }
 });
 
 goalsRouter.post("/add", async (req, res) => {
   let { name, amount, endDate, uid, planId } = req.body;
   if (name == "" || amount == "" || endDate == "") {
-    res.json({ msg: "invalid" });
+    res.json({ success: false });
     return;
   }
   const date = new Date();
@@ -33,22 +32,19 @@ goalsRouter.post("/add", async (req, res) => {
     createdAt: date,
   });
   if (response) {
-    console.log("Response is", response, uid);
-
-    res.json(response);
-    console.log(response, "has been added");
+    res.json({ success: true });
   } else {
     console.log("Addition failed");
-    res.json({ msg: "invalid" });
+    res.json({ success: false });
   }
 });
 goalsRouter.post("/delete", async (req, res) => {
   const { uid, planId, goalId } = req.body;
   const response = await deleteGoal(uid, planId, goalId);
   if (response) {
-    res.json({ msg: "deleted" });
+    res.json({ success: true });
   } else {
-    res.json({ msg: "invalid" });
+    res.json({ success: false });
   }
 });
 
@@ -59,16 +55,16 @@ goalsRouter.post("/update", async (req, res) => {
     updateFields.amount == "" ||
     updateFields.endDate == ""
   ) {
-    res.json({ msg: "invalid" });
+    res.json({ success: false });
     return;
   }
-  console.log(uid, planId, goalId, updateFields)
+  console.log(uid, planId, goalId, updateFields);
   const response = await updateGoal(uid, planId, goalId, updateFields);
-  console.log("HERE is",response)
+  console.log("HERE is", response);
   if (response) {
-    res.json({ msg: "updated" });
+    res.json({ success: true });
   } else {
-    res.json({ msg: "invalid" });
+    res.json({ success: false });
   }
 });
 goalsRouter.post("/field", async (req, res) => {
@@ -77,9 +73,9 @@ goalsRouter.post("/field", async (req, res) => {
 
   const response = await getGoalField(uid, planId, goalId, field);
   if (response) {
-    res.json(response);
+    res.json({ success: true, data: response });
   } else {
-    res.json({ msg: "invalid" });
+    res.json({ success: false });
   }
 });
 
