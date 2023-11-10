@@ -30,13 +30,15 @@ async function getAmountSpentThisWeekPerDay(uid, planId) {
     startOfWeek.setDate(currentDate.getDate() - daysToSubtract - 1);
     // set as beginning of the day
     startOfWeek.setHours(0, 0, 0, 0);
+    startOfWeek.setHours(startOfWeek.getHours() + 3); // add 3 hours for UTC+3
 
     // Calculate the end of the week (Saturday)
     const endOfWeek = new Date(startOfWeek);
     endOfWeek.setDate(startOfWeek.getDate() + 6);
     // set as end of the day
-
     endOfWeek.setHours(23, 59, 59, 999);
+    endOfWeek.setHours(endOfWeek.getHours() + 3); // add 3 hours for UTC+3
+
     console.log(startOfWeek, endOfWeek);
 
     // this list should have week days as properties and the value should be the sum of expenses of that day
