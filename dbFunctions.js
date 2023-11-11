@@ -29,7 +29,6 @@ async function categorizeDocumentsByMonth(id, planId) {
       const timestamp = doc.data().createdAt;
       const date = timestamp.toDate();
       // Convert the timestamp to a JavaScript Date object
-      console.log(date);
 
       // Get the month and year from the date
       const month = date.getMonth();

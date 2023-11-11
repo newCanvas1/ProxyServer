@@ -431,7 +431,6 @@ describe("Deletion Test Cases", () => {
 
   test("delete a notification", async () => {
     const body = { planId: planId, uid: uid, notificationId: notificationId };
-    console.log(uid, planId, notificationId);
     const request = await fetch(`${API}/notifications/delete`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },

@@ -9,6 +9,12 @@ const {
   deleteDoc,
   addDoc,
 } = require("../firebaseConfig");
+const {
+  checkNotifications,
+} = require("./notificationFunctions/notificationFunctions");
+const {
+  checkPlansNotifications,
+} = require("./notificationFunctions/plans/plans");
 const { addNotification } = require("./notifications");
 async function addPlan(uid, plan) {
   try {
@@ -36,13 +42,9 @@ async function updateSpending(uid, planId, value, type) {
         newSpending = parseFloat(spending) + parseFloat(value);
       }
 
-      updateDoc(ref, { spending: newSpending });
-      const isHalfReached = spending > budget * 0.5;
-
-      if (!isHalfReached) {
-        // if it is not reached, we check if it is now
-        checkBudgetAndNotify(uid, planId);
-      }
+      await updateDoc(ref, { spending: newSpending });
+      const info = { uid, planId, spending, budget };
+      checkNotifications(info);
       return;
     } else {
       console.log("Document does not exist");
@@ -144,20 +146,6 @@ async function getNumberOfPlans(id) {
   }
 }
 
-async function checkBudgetAndNotify(uid, planId) {
-  const budget = await getField(uid, planId, "budget");
-  const spending = await getField(uid, planId, "spending");
-  const exceededHalf = budget - spending < budget * 0.5;
-  if (exceededHalf) {
-    addNotification(uid, planId, {
-      message: "You exceeded half your budget!",
-      type: "warning",
-      isRead: false,
-      createdAt: new Date(),
-    });
-  }
-}
-
 module.exports = {
   addPlan,
   deletePlan,
@@ -166,5 +154,4 @@ module.exports = {
   getNumberOfPlans,
   getField,
   updateSpending,
-  checkBudgetAndNotify,
 };

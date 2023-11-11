@@ -24,7 +24,6 @@ async function getCategoriesAmount(uid, planId) {
     );
     const categoriesQuerySnapshot = await getDocs(categoriesQuery);
     categoriesQuerySnapshot.forEach((doc) => {
-
       // for the expense category, make a property of that name, and increment the amount by the expense amount
       if (list[doc.data().category]) {
         list[doc.data().category] += parseFloat(doc.data().amount);
@@ -93,7 +92,6 @@ async function deleteExpensesOfCategory(uid, planId, categoryId) {
         return false;
       });
     });
-
 
     await decrementSpending(uid, planId, amountOfDeleted);
     return true;
@@ -180,7 +178,6 @@ async function getAmountSpentThisWeekPerDayOfCategory(uid, planId, categoryId) {
 
     endOfWeek.setHours(23, 59, 59, 999);
 
-
     // this list should have week days as properties and the value should be the sum of expenses of that day
     let list = {};
     const routinesQuery = query(
@@ -192,7 +189,6 @@ async function getAmountSpentThisWeekPerDayOfCategory(uid, planId, categoryId) {
 
     const routinesQuerySnapshot = await getDocs(routinesQuery);
     routinesQuerySnapshot.forEach((doc) => {
-
       const date = new Date(doc.data().createdAt.seconds * 1000);
       const day = date.getDay();
       // if the day is already in the list, add the amount to the existing amount
@@ -215,6 +211,60 @@ async function getAmountSpentThisWeekPerDayOfCategory(uid, planId, categoryId) {
     return false;
   }
 }
+async function getAmountSpentThisYearPerMonthOfCategory(
+  uid,
+  planId,
+  categoryId
+) {
+  try {
+    monthList = {
+      0: "January",
+      1: "February",
+      2: "March",
+      3: "April",
+      4: "May",
+      5: "June",
+      6: "July",
+      7: "August",
+      8: "September",
+      9: "October",
+      10: "November",
+      11: "December",
+    };
+    let list = {};
+    const thisYear = new Date().getFullYear();
+    const routinesQuery = query(
+      collection(db, "User", uid, "Plans", planId, "Expenses"),
+      where("categoryId", "==", categoryId),
+      where("createdAt", ">=", new Date(thisYear, 0, 1)),
+      where("createdAt", "<=", new Date(thisYear, 11, 31))
+    );
+
+    const routinesQuerySnapshot = await getDocs(routinesQuery);
+    routinesQuerySnapshot.forEach((doc) => {
+      const date = new Date(doc.data().createdAt.seconds * 1000);
+      const month = date.getMonth();
+      // if the month is already in the list, add the amount to the existing amount
+      if (list[month]) {
+        list[month] += parseFloat(doc.data().amount);
+      } else {
+        // else create a new property and set the amount as the value
+        list[month] = parseFloat(doc.data().amount);
+      }
+    });
+    //months that does not have any expenses should be set to 0
+
+    for (let i = 0; i < 12; i++) {
+      if (!list[i]) {
+        list[i] = 0;
+      }
+    }
+    return list;
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
+}
 module.exports = {
   addCategory,
   getCategories,
@@ -223,4 +273,5 @@ module.exports = {
   getCategoriesAmount,
   getCategoryInfo,
   getAmountSpentThisWeekPerDayOfCategory,
+  getAmountSpentThisYearPerMonthOfCategory
 };
