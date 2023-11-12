@@ -5,6 +5,7 @@ userRouter.post("/", async (req, res) => {
   const { uid } = req.body;
 
   const user = await getUserData(uid);
+  console.log(user);
   if (user) {
     res.json({ success: true, data: user });
   } else {

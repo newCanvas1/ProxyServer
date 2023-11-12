@@ -90,22 +90,8 @@ async function updateExpense(uid, planId, categoryId, expenseId, updateFields) {
     await updateDoc(ref, {
       ...updateFields,
     });
-    const categoryLimitHasBeenExceeded = await catgeoryLimitExceeded(
-      uid,
-      planId,
-      categoryId,
-      updateFields.amount
-    );
-
-    if (categoryLimitHasBeenExceeded) {
-      const message = {
-        message: `You have exceeded the limit of ${updateFields.category}`,
-        importance: "high",
-        isRead: false,
-        createdAt: new Date(),
-      };
-      addNotification(uid, planId, message);
-    }
+    const info = { uid, planId, categoryId, updateFields };
+    checkNotifications(info);
     return true;
   } catch (error) {
     console.log(error);
@@ -180,6 +166,54 @@ async function getExpenses(uid, planId, categoryId, order, lastDocument) {
       list.push({ ...doc.data(), id: doc.id });
     });
     return list;
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
+}
+async function getExpensesPerDay(uid, planId, categoryId, order, lastDocument) {
+  try {
+    const expensesByDate = {};
+    const LIMIT = 7;
+    let routinesQuery = collection(
+      db,
+      "User",
+      uid,
+      "Plans",
+      planId,
+      "Expenses"
+    );
+    console.log(lastDocument);
+
+    if (lastDocument) {
+      routinesQuery = query(
+        routinesQuery,
+        categoryId && where("categoryId", "==", categoryId),
+        orderBy("createdAt", order || "desc"),
+        startAfter(new Date(lastDocument.createdAt.seconds * 1000)),
+        limit(LIMIT)
+      );
+    } else {
+      routinesQuery = query(
+        routinesQuery,
+        categoryId && where("categoryId", "==", categoryId),
+        orderBy("createdAt", order || "desc"),
+        limit(LIMIT)
+      );
+    }
+
+    const routinesQuerySnapshot = await getDocs(routinesQuery);
+    routinesQuerySnapshot.forEach((doc) => {
+      const data = doc.data();
+      const date = new Date(data.createdAt.seconds * 1000)
+        .toISOString()
+        .split("T")[0];
+      if (!expensesByDate[date]) {
+        expensesByDate[date] = [];
+      }
+      expensesByDate[date].push({ ...data, id: doc.id });
+    });
+    return expensesByDate;
   } catch (error) {
     console.log(error);
     return false;
@@ -266,4 +300,5 @@ module.exports = {
   getExpenseAmount,
   getRecentExpenses,
   getAmountSpentThisWeekPerDay,
+  getExpensesPerDay,
 };

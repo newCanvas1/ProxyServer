@@ -106,6 +106,7 @@ categoriesRouter.post("/info", async (req, res) => {
     res.status(400).json({ success: false });
     return;
   }
+  console.log("uid", uid, "planId", planId, "categoryId", categoryId);
   const response = await getCategoryInfo(uid, planId, categoryId);
 
   if (response) {
