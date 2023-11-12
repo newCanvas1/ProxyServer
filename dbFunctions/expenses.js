@@ -11,11 +11,10 @@ const {
   where,
   getDoc,
 } = require("../firebaseConfig");
-const { addNotification } = require("./notifications");
 const {
   checkNotifications,
 } = require("./notificationFunctions/notificationFunctions");
-async function getAmountSpentThisWeekPerDay(uid, planId) {
+async function getAmountSpentThisWeekPerDay(uid, planId, categoryId) {
   try {
     // get the start date of this week
     // Get the current date
@@ -32,19 +31,18 @@ async function getAmountSpentThisWeekPerDay(uid, planId) {
     startOfWeek.setDate(currentDate.getDate() - daysToSubtract - 1);
     // set as beginning of the day
     startOfWeek.setHours(0, 0, 0, 0);
-    startOfWeek.setHours(startOfWeek.getHours() + 3); // add 3 hours for UTC+3
 
     // Calculate the end of the week (Saturday)
     const endOfWeek = new Date(startOfWeek);
-    endOfWeek.setDate(startOfWeek.getDate() + 6);
+    endOfWeek.setDate(startOfWeek.getDate() + 7);
     // set as end of the day
     endOfWeek.setHours(23, 59, 59, 999);
-    endOfWeek.setHours(endOfWeek.getHours() + 3); // add 3 hours for UTC+3
 
     // this list should have week days as properties and the value should be the sum of expenses of that day
     let list = {};
     const routinesQuery = query(
       collection(db, "User", uid, "Plans", planId, "Expenses"),
+      categoryId && where("categoryId", "==", categoryId),
       where("createdAt", ">=", startOfWeek),
       where("createdAt", "<=", endOfWeek)
     );

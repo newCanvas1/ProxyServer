@@ -1,15 +1,14 @@
 const express = require("express");
 const {
   getExpenses,
-  getExpensesBetweenDates,
   getExpensesByField,
   addExpense,
   deleteExpense,
   updateExpense,
-  getExpenseAmount,
   getRecentExpenses,
   getAmountSpentThisWeekPerDay,
   getExpensesPerDay,
+  getExpenseAmount,
 } = require("../dbFunctions/expenses");
 const { updateSpending } = require("../dbFunctions/plans");
 const expensesRouter = express.Router();
@@ -93,7 +92,6 @@ expensesRouter.post("/add", async (req, res) => {
 expensesRouter.post("/delete", async (req, res) => {
   const { uid, expenseId, planId, categoryId } = req.body;
   const amount = await getExpenseAmount(uid, planId, categoryId, expenseId);
-
   if (!amount) {
     res.json({ success: false });
     return;

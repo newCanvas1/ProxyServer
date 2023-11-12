@@ -6,9 +6,9 @@ const {
   updateCategory,
   getCategoriesAmount,
   getCategoryInfo,
-  getAmountSpentThisWeekPerDayOfCategory,
   getAmountSpentThisYearPerMonthOfCategory,
 } = require("../dbFunctions/categories");
+const { getAmountSpentThisWeekPerDay } = require("../dbFunctions/expenses");
 
 const categoriesRouter = express.Router();
 categoriesRouter.post("/", async (req, res) => {
@@ -25,7 +25,7 @@ categoriesRouter.post("/", async (req, res) => {
 });
 categoriesRouter.post("/spending/thisWeek", async (req, res) => {
   const { uid, planId, categoryId } = req.body;
-  const expenses = await getAmountSpentThisWeekPerDayOfCategory(
+  const expenses = await getAmountSpentThisWeekPerDay(
     uid,
     planId,
     categoryId

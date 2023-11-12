@@ -153,64 +153,6 @@ async function getCategoryInfo(uid, planId, categoryId) {
   return { expensesCount, expensesAmount };
 }
 
-async function getAmountSpentThisWeekPerDayOfCategory(uid, planId, categoryId) {
-  try {
-    // get the start date of this week
-    // Get the current date
-    const currentDate = new Date();
-
-    // Get the current day of the week (0 to 6, where 0 is Sunday)
-    const currentDayOfWeek = currentDate.getDay(); // 0-6
-
-    // Calculate the number of days to subtract to get to the previous Sunday
-    const daysToSubtract = currentDayOfWeek > 0 ? currentDayOfWeek - 1 : 6; // 1-6
-
-    // Calculate the start of the week (previous Sunday)
-    const startOfWeek = new Date(currentDate);
-    startOfWeek.setDate(currentDate.getDate() - daysToSubtract - 1);
-    // set as beginning of the day
-    startOfWeek.setHours(0, 0, 0, 0);
-
-    // Calculate the end of the week (Saturday)
-    const endOfWeek = new Date(startOfWeek);
-    endOfWeek.setDate(startOfWeek.getDate() + 6);
-    // set as end of the day
-
-    endOfWeek.setHours(23, 59, 59, 999);
-
-    // this list should have week days as properties and the value should be the sum of expenses of that day
-    let list = {};
-    const routinesQuery = query(
-      collection(db, "User", uid, "Plans", planId, "Expenses"),
-      where("categoryId", "==", categoryId),
-      where("createdAt", ">=", startOfWeek),
-      where("createdAt", "<=", endOfWeek)
-    );
-
-    const routinesQuerySnapshot = await getDocs(routinesQuery);
-    routinesQuerySnapshot.forEach((doc) => {
-      const date = new Date(doc.data().createdAt.seconds * 1000);
-      const day = date.getDay();
-      // if the day is already in the list, add the amount to the existing amount
-      if (list[day]) {
-        list[day] += parseFloat(doc.data().amount);
-      } else {
-        // else create a new property and set the amount as the value
-        list[day] = parseFloat(doc.data().amount);
-      }
-    });
-    //days that does not have any expenses should be set to 0
-    for (let i = 0; i < 7; i++) {
-      if (!list[i]) {
-        list[i] = 0;
-      }
-    }
-    return list;
-  } catch (error) {
-    console.log(error);
-    return false;
-  }
-}
 async function getAmountSpentThisYearPerMonthOfCategory(
   uid,
   planId,
@@ -272,6 +214,5 @@ module.exports = {
   updateCategory,
   getCategoriesAmount,
   getCategoryInfo,
-  getAmountSpentThisWeekPerDayOfCategory,
-  getAmountSpentThisYearPerMonthOfCategory
+  getAmountSpentThisYearPerMonthOfCategory,
 };
