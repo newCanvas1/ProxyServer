@@ -4,7 +4,7 @@ const {
   collection,
   where,
   getDocs,
-  query
+  query,
 } = require("firebase/firestore");
 const { db } = require("../../../firebaseConfig");
 const { addNotification } = require("../../notifications");
@@ -29,7 +29,7 @@ async function catgeoryLimitExceeded(info) {
   }
 
   const oldTotal = total - updateFields.amount;
-
+console.log(oldTotal, total, limit);
   // if the total is already greater than the limit, return true
   if (oldTotal > limit) {
     return false;
@@ -40,6 +40,7 @@ async function catgeoryLimitExceeded(info) {
     const message = {
       message: `You have exceeded the limit of ${updateFields.category}`,
       importance: "high",
+      icon: "chart-line",
       isRead: false,
       createdAt: new Date(),
     };

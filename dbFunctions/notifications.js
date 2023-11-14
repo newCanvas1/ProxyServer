@@ -7,12 +7,15 @@ const {
   doc,
   deleteDoc,
   updateDoc,
+  where,
+  orderBy,
 } = require("../firebaseConfig");
 async function getNotifications(uid, planId) {
   try {
     let list = [];
     const eventsQuery = query(
-      collection(db, "User", uid, "Plans", planId, "Notifications")
+      collection(db, "User", uid, "Plans", planId, "Notifications"),
+      orderBy("createdAt", "desc")
     );
 
     const eventsQuerySnapshot = await getDocs(eventsQuery);
@@ -90,7 +93,6 @@ async function deleteNotification(uid, planId, notificationId) {
     );
     await deleteDoc(ref)
       .then(async () => {
-
         return true;
       })
       .catch((err) => {
@@ -109,5 +111,5 @@ module.exports = {
   addNotification,
   deleteNotification,
   readNotification,
-  readNotificationCount
+  readNotificationCount,
 };

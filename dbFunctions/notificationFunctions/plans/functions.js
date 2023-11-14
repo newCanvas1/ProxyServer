@@ -2,6 +2,34 @@ const { getDoc, doc } = require("firebase/firestore");
 const { addNotification } = require("../../notifications");
 const { db } = require("../../../firebaseConfig");
 
+async function categoryBudgetExceeded(info) {
+  const { uid, planId, spending, budget } = info; // if any of those is undefined, return
+
+  if (!uid || !planId || !spending || !budget) {
+    return;
+  }
+  const isAlreadyExceeded = spending > budget;
+
+  if (isAlreadyExceeded) {
+    return;
+  }
+
+  setTimeout(async () => {
+    const budgetField = await getField(uid, planId, "budget");
+    const spendingField = await getField(uid, planId, "spending");
+    const exceeded = spendingField > budgetField;
+
+    if (exceeded) {
+      addNotification(uid, planId, {
+        message: "You exceeded your budget!",
+        type: "warning",
+        icon: "wallet",
+        isRead: false,
+        createdAt: new Date(),
+      });
+    }
+  }, 1000);
+}
 async function categoryHalfBudgetExceeded(info) {
   const { uid, planId, spending, budget } = info; // if any of those is undefined, return
 
@@ -23,6 +51,7 @@ async function categoryHalfBudgetExceeded(info) {
       addNotification(uid, planId, {
         message: "You exceeded half your budget!",
         type: "warning",
+        icon: "wallet",
         isRead: false,
         createdAt: new Date(),
       });
@@ -55,4 +84,5 @@ async function getField(uid, planId, field) {
 
 module.exports = {
   categoryHalfBudgetExceeded,
+  categoryBudgetExceeded
 };

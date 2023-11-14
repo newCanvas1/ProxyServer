@@ -28,13 +28,15 @@ expensesRouter.post("/", async (req, res) => {
   }
 });
 expensesRouter.post("/perDay", async (req, res) => {
-  const { uid, planId, categoryId, order, lastDocument } = req.body;
+  const { uid, planId, categoryId, order, lastDocument, name } = req.body;
+  console.log(req.body);
   const expenses = await getExpensesPerDay(
     uid,
     planId,
     categoryId,
     order,
-    lastDocument
+    lastDocument,
+    name
   );
   if (expenses) {
     res.json({ success: true, data: expenses });

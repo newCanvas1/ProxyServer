@@ -89,6 +89,7 @@ async function updateExpense(uid, planId, categoryId, expenseId, updateFields) {
       ...updateFields,
     });
     const info = { uid, planId, categoryId, updateFields };
+    console.log(info);
     checkNotifications(info);
     return true;
   } catch (error) {
@@ -154,7 +155,6 @@ async function getExpenses(uid, planId, categoryId, order, lastDocument) {
         routinesQuery,
         categoryId && where("categoryId", "==", categoryId),
         orderBy("createdAt", order || "desc"),
-
         limit(LIMIT) // Adjust the limit as per your requirement
       );
     }
@@ -169,7 +169,14 @@ async function getExpenses(uid, planId, categoryId, order, lastDocument) {
     return false;
   }
 }
-async function getExpensesPerDay(uid, planId, categoryId, order, lastDocument) {
+async function getExpensesPerDay(
+  uid,
+  planId,
+  categoryId,
+  order,
+  lastDocument,
+  name
+) {
   try {
     const expensesByDate = {};
     const LIMIT = 7;
@@ -181,7 +188,8 @@ async function getExpensesPerDay(uid, planId, categoryId, order, lastDocument) {
       planId,
       "Expenses"
     );
-    console.log(lastDocument);
+    console.log("New request")
+    console.log("lastDocument", lastDocument)
 
     if (lastDocument) {
       routinesQuery = query(
@@ -199,6 +207,7 @@ async function getExpensesPerDay(uid, planId, categoryId, order, lastDocument) {
         limit(LIMIT)
       );
     }
+
 
     const routinesQuerySnapshot = await getDocs(routinesQuery);
     routinesQuerySnapshot.forEach((doc) => {
