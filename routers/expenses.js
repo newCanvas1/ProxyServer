@@ -8,6 +8,7 @@ const {
   getRecentExpenses,
   getAmountSpentThisWeekPerDay,
   getExpensesPerDay,
+  getExpensesCountPerDay,
   getExpenseAmount,
 } = require("../dbFunctions/expenses");
 const { updateSpending } = require("../dbFunctions/plans");
@@ -21,6 +22,15 @@ expensesRouter.post("/", async (req, res) => {
     order,
     lastDocument
   );
+  if (expenses) {
+    res.json({ success: true, data: expenses });
+  } else {
+    res.json({ success: false });
+  }
+});
+expensesRouter.post("/count/perDay", async (req, res) => {
+  const { uid, planId } = req.body;
+  const expenses = await getExpensesCountPerDay(uid, planId);
   if (expenses) {
     res.json({ success: true, data: expenses });
   } else {

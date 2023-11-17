@@ -26,7 +26,7 @@ plansRouter.post("/add", async (req, res) => {
 
   // if any of plan properties is empty, retun invalid
   const { name, budget, currency } = plan;
-  if ((name == "" || budget == "", currency == "")) {
+  if ((name == "" || budget == ""|| currency == "")) {
     res.json({ success: false });
     return;
   }
