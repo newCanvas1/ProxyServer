@@ -177,7 +177,7 @@ async function getAmountSpentThisYearPerMonthOfCategory(
     const thisYear = new Date().getFullYear();
     const routinesQuery = query(
       collection(db, "User", uid, "Plans", planId, "Expenses"),
-      where("categoryId", "==", categoryId),
+      categoryId&&where("categoryId", "==", categoryId),
       where("createdAt", ">=", new Date(thisYear, 0, 1)),
       where("createdAt", "<=", new Date(thisYear, 11, 31))
     );

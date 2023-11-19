@@ -18,47 +18,53 @@ const {
 async function getExpensesCountPerDay(uid, planId) {
   // this function fetches the expenses count per day of this month
 
-  // get the start date of this month
-  const startDate = new Date();
-  startDate.setDate(1);
-  // set as beginning of the day
-  startDate.setHours(0, 0, 0, 0);
+  try {
+    // get the start date of this month
+    const startDate = new Date();
+    startDate.setDate(1);
+    // set as beginning of the day
+    startDate.setHours(0, 0, 0, 0);
 
-  // get the end date of this month
-  const endDate = new Date();
-  endDate.setMonth(endDate.getMonth() + 1);
-  endDate.setDate(0);
-  // set as end of the day
-  endDate.setHours(23, 59, 59, 999);
+    // get the end date of this month
+    const endDate = new Date();
+    endDate.setMonth(endDate.getMonth() + 1);
+    endDate.setDate(0);
+    // set as end of the day
+    endDate.setHours(23, 59, 59, 999);
 
-  // this list should have an object for each day of the month and the value should be the count how many expenses were made that day
-  let list = [];
-  // const list = [
-  // { date: "2017-01-02", count: 1 },
-  // { date: "2017-01-03", count: 2 },
-  // { date: "2017-01-04", count: 3 },
-  const routinesQuery = query(
-    collection(db, "User", uid, "Plans", planId, "Expenses"),
-    where("createdAt", ">=", startDate),
-    where("createdAt", "<=", endDate)
-  );
+    // this list should have an object for each day of the month and the value should be the count how many expenses were made that day
+    let list = [];
+    // const list = [
+    // { date: "2017-01-02", count: 1 },
+    // { date: "2017-01-03", count: 2 },
+    // { date: "2017-01-04", count: 3 },
+    const routinesQuery = query(
+      collection(db, "User", uid, "Plans", planId, "Expenses"),
+      where("createdAt", ">=", startDate),
+      where("createdAt", "<=", endDate)
+    );
 
-  const routinesQuerySnapshot = await getDocs(routinesQuery);
+    const routinesQuerySnapshot = await getDocs(routinesQuery);
 
-  routinesQuerySnapshot.forEach((doc) => {
-    const date = new Date(doc.data().createdAt.seconds * 1000)
-      .toISOString()
-      .split("T")[0];
-    // if the day is already in the list, add 1 to the existing count
-    const index = list.findIndex((item) => item.date == date);
-    if (index != -1) {
-      list[index].count++;
-    } else {
-      // else create a new object and set the count as 1
-      list.push({ date, count: 1 });
-    }
-  });
-  return list;
+    routinesQuerySnapshot.forEach((doc) => {
+      const date = new Date(doc.data().createdAt.seconds * 1000)
+        .toISOString()
+        .split("T")[0];
+      console.log(date);
+      // if the day is already in the list, add 1 to the existing count
+      const index = list.findIndex((item) => item.date == date);
+      if (index != -1) {
+        list[index].count++;
+      } else {
+        // else create a new object and set the count as 1
+        list.push({ date, count: 1 });
+      }
+    });
+    return list;
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
 }
 async function getAmountSpentThisWeekPerDay(uid, planId, categoryId) {
   try {
