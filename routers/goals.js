@@ -8,9 +8,11 @@ const {
 } = require("../dbFunctions/goals");
 const { updateDoc } = require("firebase/firestore");
 const goalsRouter = express.Router();
-goalsRouter.post("/", async (req, res) => {
-  const { uid, planId } = req.body;
-  const goals = await getUserGoals(uid, planId);
+
+goalsRouter.get("/get-goals/:uid/:currentPlan", async (req, res) => {
+  const { uid, currentPlan } = req.params;
+  const goals = await getUserGoals(uid, currentPlan);
+  console.log("user goals are ", goals);
   if (goals) {
     res.json({ success: true, goals: goals });
   } else {
@@ -19,25 +21,28 @@ goalsRouter.post("/", async (req, res) => {
 });
 
 goalsRouter.post("/add", async (req, res) => {
-  let { name, amount, endDate, uid, planId } = req.body;
-  if (name == "" || amount == "" || endDate == "") {
-    res.json({ success: false });
-    return;
-  }
-  const date = new Date();
-  const response = await addGoal(uid, planId, {
-    name,
-    amount,
-    endDate,
-    createdAt: date,
+  let { goalName, goalCost, goalDate, currentPlan, uid } = req.body;
+  console.log("add end point hit, goal is ", {
+    goalName,
+    goalCost,
+    goalDate,
+    currentPlan,
+    uid,
   });
+  const response = await addGoal(uid, currentPlan, {
+    goalName,
+    goalCost,
+    goalDate,
+    createdAt: new Date(),
+  });
+
   if (response) {
     res.json({ success: true });
   } else {
-    console.log("Addition failed");
     res.json({ success: false });
   }
 });
+
 goalsRouter.post("/delete", async (req, res) => {
   const { uid, planId, goalId } = req.body;
   const response = await deleteGoal(uid, planId, goalId);
@@ -69,7 +74,6 @@ goalsRouter.post("/update", async (req, res) => {
 });
 goalsRouter.post("/field", async (req, res) => {
   const { uid, planId, goalId, field } = req.body;
-
 
   const response = await getGoalField(uid, planId, goalId, field);
   if (response) {

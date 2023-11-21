@@ -1,9 +1,9 @@
 const express = require("express");
 const { getUserData, updateUser } = require("../dbFunctions/user");
 const userRouter = express.Router();
+
 userRouter.post("/", async (req, res) => {
   const { uid } = req.body;
-
   const user = await getUserData(uid);
   console.log(user);
   if (user) {

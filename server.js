@@ -1,6 +1,8 @@
 const express = require("express");
 const app = express();
 const port = 3000;
+const cors = require("cors");
+
 const DELAY_ENABLED = true;
 const DELAY = 0; // in seconds
 const expensesRouter = require("./routers/expenses");
@@ -10,6 +12,7 @@ const userRouter = require("./routers/user");
 const categoriesRouter = require("./routers/categories");
 const goalsRouter = require("./routers/goals");
 
+app.use(cors());
 app.disable("x-powered-by");
 
 app.use(express.json());

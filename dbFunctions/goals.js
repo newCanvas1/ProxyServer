@@ -9,13 +9,14 @@ const {
   deleteDoc,
   addDoc,
 } = require("../firebaseConfig");
+
 async function addGoal(uid, planId, goal) {
   try {
     const ref = collection(db, "User", uid, "Plans", planId, "Goals");
     const doc = await addDoc(ref, goal);
-    return doc.id;
+    return true;
   } catch (error) {
-    console.log(error);
+    console.error("Error in Adding Goal: ", error);
     return false;
   }
 }
@@ -25,7 +26,6 @@ async function deleteGoal(uid, planId, goalId) {
 
     await deleteDoc(ref)
       .then(async () => {
-
         return true;
       })
       .catch((err) => {
@@ -41,7 +41,6 @@ async function deleteGoal(uid, planId, goalId) {
 async function getUserGoals(uid, planId) {
   try {
     let list = [];
-
 
     const planIDQuery = query(
       collection(db, "User", uid, "Plans", planId, "Goals")
@@ -77,7 +76,6 @@ async function updateGoal(uid, planId, goalId, updateFields) {
       });
     return result;
   } catch (error) {
-
     console.log(error);
     return false;
   }
