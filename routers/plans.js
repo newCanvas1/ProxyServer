@@ -32,12 +32,13 @@ plansRouter.post("/add", async (req, res) => {
     return;
   }
   const date = new Date();
-  response = await addFamilyPlan(uid, {
-    ...plan,
-    spending: 0,
-    createdAt: date,
-  });
+
   if (plan.isFamilyPlan) {
+    response = await addFamilyPlan(uid, {
+      ...plan,
+      spending: 0,
+      createdAt: date,
+    });
   } else {
     response = await addPlan(uid, {
       ...plan,
