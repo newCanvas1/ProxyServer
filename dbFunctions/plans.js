@@ -8,6 +8,7 @@ const {
   updateDoc,
   deleteDoc,
   addDoc,
+  setDoc,
 } = require("../firebaseConfig");
 const {
   checkNotifications,
@@ -15,12 +16,25 @@ const {
 const {
   checkPlansNotifications,
 } = require("./notificationFunctions/plans/plans");
-const { addNotification } = require("./notifications");
 async function addPlan(uid, plan) {
   try {
     const ref = collection(db, "User", uid, "Plans");
     const doc = await addDoc(ref, plan);
     return doc.id;
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
+}
+async function addFamilyPlan(uid, plan) {
+  try {
+    // make an id that starts with family_ and then a 10 random characters and numbers
+    const id = "family_" + Math.random().toString(36).substr(2, 10);
+    const plansRef = doc(db, "User", uid, "Plans", id);
+    const familyPlansRef = doc(db, "family_plans", id);
+    await setDoc(plansRef, { ...plan, id });
+    await setDoc(familyPlansRef, { ...plan, id });
+    return id;
   } catch (error) {
     console.log(error);
     return false;
@@ -154,4 +168,5 @@ module.exports = {
   getNumberOfPlans,
   getField,
   updateSpending,
+  addFamilyPlan
 };

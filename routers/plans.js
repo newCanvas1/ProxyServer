@@ -6,6 +6,7 @@ const {
   deletePlan,
   updatePlan,
   getField,
+  addFamilyPlan,
 } = require("../dbFunctions/plans");
 const { updateUser } = require("../dbFunctions/user");
 
@@ -23,19 +24,28 @@ plansRouter.post("/", async (req, res) => {
 
 plansRouter.post("/add", async (req, res) => {
   let { plan, uid } = req.body;
-
+  let response = "";
   // if any of plan properties is empty, retun invalid
   const { name, budget, currency } = plan;
-  if ((name == "" || budget == ""|| currency == "")) {
+  if (name == "" || budget == "" || currency == "") {
     res.json({ success: false });
     return;
   }
   const date = new Date();
-  const response = await addPlan(uid, {
+  response = await addFamilyPlan(uid, {
     ...plan,
     spending: 0,
     createdAt: date,
   });
+  if (plan.isFamilyPlan) {
+  } else {
+    response = await addPlan(uid, {
+      ...plan,
+      spending: 0,
+      createdAt: date,
+    });
+  }
+
   if (response) {
     await updateUser(uid, { lastPlan: response }).catch((err) => {
       console.log(err);
