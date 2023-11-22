@@ -7,6 +7,8 @@ const {
   updatePlan,
   getField,
   addFamilyPlan,
+  handleInviteAccept,
+  handleInviteReject,
 } = require("../dbFunctions/plans");
 const { updateUser } = require("../dbFunctions/user");
 
@@ -21,7 +23,16 @@ plansRouter.post("/", async (req, res) => {
     res.json({ msg: "invalid" });
   }
 });
-
+plansRouter.post("/invite", async (req, res) => {
+  const { uid, invite,email, accept } = req.body;
+  let response = false;
+  if (accept) {
+    response = await handleInviteAccept(uid, invite,email);
+  } else {
+    response = await handleInviteReject(uid, invite);
+  }
+  res.json({ success: response });
+});
 plansRouter.post("/add", async (req, res) => {
   let { plan, uid } = req.body;
   let response = "";

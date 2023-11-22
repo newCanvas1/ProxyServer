@@ -79,7 +79,7 @@ expensesRouter.get("/field", async (req, res) => {
   }
 });
 expensesRouter.post("/add", async (req, res) => {
-  let { name, amount, uid, category, planId, categoryId, icon } = req.body;
+  let { name, amount, uid, category, planId, categoryId, adder } = req.body;
   if (name == "" || amount == "" || isNaN(amount)) {
     res.status(400).send({ success: false });
     return;
@@ -91,6 +91,7 @@ expensesRouter.post("/add", async (req, res) => {
     category: category.name,
     categoryId,
     createdAt: date,
+    adder
   };
   const response = await addExpense(uid, planId, categoryId, expense);
 

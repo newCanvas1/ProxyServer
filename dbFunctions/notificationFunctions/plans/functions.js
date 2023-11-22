@@ -1,6 +1,7 @@
 const { getDoc, doc } = require("firebase/firestore");
 const { addNotification } = require("../../notifications");
 const { db } = require("../../../firebaseConfig");
+const { checkIfFamilyPlan } = require("../../general/functions");
 
 async function categoryBudgetExceeded(info) {
   const { uid, planId, spending, budget } = info; // if any of those is undefined, return
@@ -63,9 +64,11 @@ async function getField(uid, planId, field) {
   // here we need the user id
 
   try {
-    const docRef = doc(db, "User", uid, "Plans", planId);
+    const ref = checkIfFamilyPlan(planId)
+      ? doc(db, "family_plans", planId)
+      : doc(db, "User", uid, "Plans", planId);
 
-    const docSnap = await getDoc(docRef);
+    const docSnap = await getDoc(ref);
     // if it exists
     if (docSnap.exists()) {
       // change user state
@@ -84,5 +87,5 @@ async function getField(uid, planId, field) {
 
 module.exports = {
   categoryHalfBudgetExceeded,
-  categoryBudgetExceeded
+  categoryBudgetExceeded,
 };

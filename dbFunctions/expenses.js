@@ -14,6 +14,7 @@ const {
 const {
   checkNotifications,
 } = require("./notificationFunctions/notificationFunctions");
+const { checkIfFamilyPlan } = require("./general/functions");
 
 async function getExpensesCountPerDay(uid, planId) {
   // this function fetches the expenses count per day of this month
@@ -38,8 +39,11 @@ async function getExpensesCountPerDay(uid, planId) {
     // { date: "2017-01-02", count: 1 },
     // { date: "2017-01-03", count: 2 },
     // { date: "2017-01-04", count: 3 },
+    const ref = checkIfFamilyPlan(planId)
+      ? collection(db, "family_plans", planId, "Expenses")
+      : collection(db, "User", uid, "Plans", planId, "Expenses");
     const routinesQuery = query(
-      collection(db, "User", uid, "Plans", planId, "Expenses"),
+      ref,
       where("createdAt", ">=", startDate),
       where("createdAt", "<=", endDate)
     );
@@ -92,8 +96,11 @@ async function getAmountSpentThisWeekPerDay(uid, planId, categoryId) {
 
     // this list should have week days as properties and the value should be the sum of expenses of that day
     let list = {};
+    const ref = checkIfFamilyPlan(planId)
+      ? collection(db, "family_plans", planId, "Expenses")
+      : collection(db, "User", uid, "Plans", planId, "Expenses");
     const routinesQuery = query(
-      collection(db, "User", uid, "Plans", planId, "Expenses"),
+      ref,
       categoryId && where("categoryId", "==", categoryId),
       where("createdAt", ">=", startOfWeek),
       where("createdAt", "<=", endOfWeek)
@@ -125,7 +132,9 @@ async function getAmountSpentThisWeekPerDay(uid, planId, categoryId) {
 }
 async function deleteExpense(uid, planId, categoryId, expenseId) {
   try {
-    const ref = doc(db, "User", uid, "Plans", planId, "Expenses", expenseId);
+    const ref = checkIfFamilyPlan(planId)
+      ? doc(db, "family_plans", planId, "Expenses", expenseId)
+      : doc(db, "User", uid, "Plans", planId, "Expenses", expenseId);
     await deleteDoc(ref);
     return true;
   } catch (error) {
@@ -136,12 +145,13 @@ async function deleteExpense(uid, planId, categoryId, expenseId) {
 
 async function updateExpense(uid, planId, categoryId, expenseId, updateFields) {
   try {
-    const ref = doc(db, "User", uid, "Plans", planId, "Expenses", expenseId);
+    const ref = checkIfFamilyPlan(planId)
+      ? doc(db, "family_plans", planId, "Expenses", expenseId)
+      : doc(db, "User", uid, "Plans", planId, "Expenses", expenseId);
     await updateDoc(ref, {
       ...updateFields,
     });
     const info = { uid, planId, categoryId, updateFields };
-    console.log(info);
     checkNotifications(info);
     return true;
   } catch (error) {
@@ -153,16 +163,12 @@ async function updateExpense(uid, planId, categoryId, expenseId, updateFields) {
 async function getRecentExpenses(uid, planId) {
   try {
     let list = [];
-    let routinesQuery = collection(
-      db,
-      "User",
-      uid,
-      "Plans",
-      planId,
-      "Expenses"
-    );
+    const ref = checkIfFamilyPlan(planId)
+      ? collection(db, "family_plans", planId, "Expenses")
+      : collection(db, "User", uid, "Plans", planId, "Expenses");
+
     routinesQuery = query(
-      routinesQuery,
+      ref,
       orderBy("createdAt", "desc"),
       limit(10) // Adjust the limit as per your requirement
     );
@@ -186,17 +192,13 @@ async function getExpenses(uid, planId, categoryId, order, lastDocument) {
     if (order != "asc" && order != "desc") {
       order = "desc";
     }
-    let routinesQuery = collection(
-      db,
-      "User",
-      uid,
-      "Plans",
-      planId,
-      "Expenses"
-    );
+    const ref = checkIfFamilyPlan(planId)
+      ? collection(db, "family_plans", planId, "Expenses")
+      : collection(db, "User", uid, "Plans", planId, "Expenses");
+
     if (lastDocument) {
       routinesQuery = query(
-        routinesQuery,
+        ref,
         categoryId && where("categoryId", "==", categoryId),
         orderBy("createdAt", order || "desc"),
         startAfter(new Date(lastDocument.createdAt.seconds * 1000)),
@@ -204,7 +206,7 @@ async function getExpenses(uid, planId, categoryId, order, lastDocument) {
       );
     } else {
       routinesQuery = query(
-        routinesQuery,
+        ref,
         categoryId && where("categoryId", "==", categoryId),
         orderBy("createdAt", order || "desc"),
         limit(LIMIT) // Adjust the limit as per your requirement
@@ -232,20 +234,14 @@ async function getExpensesPerDay(
   try {
     const expensesByDate = {};
     const LIMIT = 7;
-    let routinesQuery = collection(
-      db,
-      "User",
-      uid,
-      "Plans",
-      planId,
-      "Expenses"
-    );
-    console.log("New request");
-    console.log("lastDocument", lastDocument);
+
+    const ref = checkIfFamilyPlan(planId)
+      ? collection(db, "family_plans", planId, "Expenses")
+      : collection(db, "User", uid, "Plans", planId, "Expenses");
 
     if (lastDocument) {
       routinesQuery = query(
-        routinesQuery,
+        ref,
         categoryId && where("categoryId", "==", categoryId),
         orderBy("createdAt", order || "desc"),
         startAfter(new Date(lastDocument.createdAt.seconds * 1000)),
@@ -253,7 +249,7 @@ async function getExpensesPerDay(
       );
     } else {
       routinesQuery = query(
-        routinesQuery,
+        ref,
         categoryId && where("categoryId", "==", categoryId),
         orderBy("createdAt", order || "desc"),
         limit(LIMIT)
@@ -299,9 +295,11 @@ async function getExpensesBetweenDates(uid, planId, categoryId) {
 
 async function getExpensesByField(uid, planId, categoryId, field, value) {
   let list = [];
-
+  const ref = checkIfFamilyPlan(planId)
+    ? collection(db, "family_plans", planId, "Expenses")
+    : collection(db, "User", uid, "Plans", planId, "Expenses");
   const routinesQuery = query(
-    collection(db, "User", uid, "Plans", planId, "Expenses"),
+    ref,
     orderBy("createdAt", "desc"),
     where("categoryId", "==", categoryId),
 
@@ -316,7 +314,10 @@ async function getExpensesByField(uid, planId, categoryId, field, value) {
 
 async function addExpense(uid, planId, categoryId, expense) {
   try {
-    const ref = collection(db, "User", uid, "Plans", planId, "Expenses");
+    const ref = checkIfFamilyPlan(planId)
+      ? collection(db, "family_plans", planId, "Expenses")
+      : collection(db, "User", uid, "Plans", planId, "Expenses");
+
     const doc = await addDoc(ref, expense);
 
     const info = { uid, planId, categoryId, updateFields: expense };
@@ -330,17 +331,11 @@ async function addExpense(uid, planId, categoryId, expense) {
 
 async function getExpenseAmount(uid, planId, categoryId, expenseId) {
   try {
-    const routinesQuery = doc(
-      db,
-      "User",
-      uid,
-      "Plans",
-      planId,
-      "Expenses",
-      expenseId
-    );
+    const ref = checkIfFamilyPlan(planId)
+      ? doc(db, "family_plans", planId, "Expenses", expenseId)
+      : doc(db, "User", uid, "Plans", planId, "Expenses", expenseId);
 
-    const routinesQuerySnapshot = await getDoc(routinesQuery);
+    const routinesQuerySnapshot = await getDoc(ref);
     const amount = routinesQuerySnapshot.data().amount;
     return amount;
   } catch (error) {
