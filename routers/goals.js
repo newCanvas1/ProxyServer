@@ -21,8 +21,9 @@ goalsRouter.get("/get-goals/:uid/:currentPlan", async (req, res) => {
 });
 
 goalsRouter.post("/add", async (req, res) => {
-  let { goalName, goalCost, goalDate, currentPlan, uid } = req.body;
+  let { goalId, goalName, goalCost, goalDate, currentPlan, uid } = req.body;
   console.log("add end point hit, goal is ", {
+    goalId,
     goalName,
     goalCost,
     goalDate,
@@ -30,6 +31,7 @@ goalsRouter.post("/add", async (req, res) => {
     uid,
   });
   const response = await addGoal(uid, currentPlan, {
+    goalId,
     goalName,
     goalCost,
     goalDate,
@@ -43,7 +45,7 @@ goalsRouter.post("/add", async (req, res) => {
   }
 });
 
-goalsRouter.post("/delete", async (req, res) => {
+goalsRouter.delete("/delete", async (req, res) => {
   const { uid, planId, goalId } = req.body;
   const response = await deleteGoal(uid, planId, goalId);
   if (response) {
@@ -53,7 +55,7 @@ goalsRouter.post("/delete", async (req, res) => {
   }
 });
 
-goalsRouter.post("/update", async (req, res) => {
+goalsRouter.put("/update", async (req, res) => {
   const { uid, planId, goalId, updateFields } = req.body;
   if (
     updateFields.name == "" ||
