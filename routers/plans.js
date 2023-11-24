@@ -9,8 +9,14 @@ const {
   addFamilyPlan,
   handleInviteAccept,
   handleInviteReject,
+  sendInvitesToNewMembers,
+  deletePlanFromDeletedMembers,
+  handleFamilyPlanDelete,
 } = require("../dbFunctions/plans");
 const { updateUser } = require("../dbFunctions/user");
+const { updateDoc, doc } = require("firebase/firestore");
+const { db } = require("../firebaseConfig");
+const { checkIfFamilyPlan } = require("../dbFunctions/general/functions");
 
 const plansRouter = express.Router();
 plansRouter.post("/", async (req, res) => {
@@ -24,17 +30,17 @@ plansRouter.post("/", async (req, res) => {
   }
 });
 plansRouter.post("/invite", async (req, res) => {
-  const { uid, invite,email, accept } = req.body;
+  const { uid, invite, email, accept } = req.body;
   let response = false;
   if (accept) {
-    response = await handleInviteAccept(uid, invite,email);
+    response = await handleInviteAccept(uid, invite, email);
   } else {
     response = await handleInviteReject(uid, invite);
   }
   res.json({ success: response });
 });
 plansRouter.post("/add", async (req, res) => {
-  let { plan, uid } = req.body;
+  let { plan, uid, senderName } = req.body;
   let response = "";
   // if any of plan properties is empty, retun invalid
   const { name, budget, currency } = plan;
@@ -45,11 +51,15 @@ plansRouter.post("/add", async (req, res) => {
   const date = new Date();
 
   if (plan.isFamilyPlan) {
-    response = await addFamilyPlan(uid, {
-      ...plan,
-      spending: 0,
-      createdAt: date,
-    });
+    response = await addFamilyPlan(
+      uid,
+      {
+        ...plan,
+        spending: 0,
+        createdAt: date,
+      },
+      senderName
+    );
   } else {
     response = await addPlan(uid, {
       ...plan,
@@ -68,13 +78,27 @@ plansRouter.post("/add", async (req, res) => {
     res.json({ success: false });
   }
 });
+plansRouter.post("/update/members", async (req, res) => {
+  const { planId, members, senderName } = req.body;
+  // send ivites to new members
+  try {
+    await sendInvitesToNewMembers(planId, members, senderName);
+    await deletePlanFromDeletedMembers(planId, members);
+    await updateDoc(doc(db, "family_plans", planId), { members });
+    res.json({ success: true });
+  } catch (error) {
+    res.json({ success: false });
+  }
+});
 plansRouter.post("/delete", async (req, res) => {
   const { uid, planId } = req.body;
   const numOfPlans = await getNumberOfPlans(uid);
   if (numOfPlans == 1) {
     res.json({ success: false });
   } else {
-    const response = await deletePlan(uid, planId);
+    const response = checkIfFamilyPlan(planId)
+      ? await handleFamilyPlanDelete(uid, planId)
+      : await deletePlan(uid, planId);
     if (response) {
       res.json({ success: true });
     } else {
