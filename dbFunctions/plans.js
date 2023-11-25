@@ -223,7 +223,12 @@ async function getPlanMembers(planId) {
   const members = plan.members;
   return members;
 }
-async function sendInvitesToNewMembers(planId, newMembers, senderName) {
+async function sendInvitesToNewMembers(
+  planId,
+  newMembers,
+  senderName,
+  planName
+) {
   // get members from the plan
   // send invites to new members
   // get the plan
@@ -261,7 +266,7 @@ async function sendInvitesToNewMembers(planId, newMembers, senderName) {
           planId,
           icon: "account-multiple",
           senderName,
-          planName: "",
+          planName,
           createdAt: new Date(),
           isRead: false,
         };
@@ -338,7 +343,7 @@ async function handleInviteReject(uid, invite) {
     return false;
   }
 }
-async function handleInviteAccept(uid, invite, email) {
+async function handleInviteAccept(uid, invite, email, senderName) {
   try {
     // delete the invite doc from invitations collection
     const ref = doc(db, "User", uid, "Invitations", invite.id);
@@ -355,7 +360,6 @@ async function handleInviteAccept(uid, invite, email) {
     });
 
     const familyPlanRef = doc(db, "family_plans", invite.planId);
-    console.log(invite.planId);
     // change the status of the member to accepted
     const docSnap = await getDoc(familyPlanRef);
     let document = docSnap.data();
@@ -375,6 +379,18 @@ async function handleInviteAccept(uid, invite, email) {
     });
     document.members = members;
     await updateDoc(familyPlanRef, document);
+    // make a notification to the plan to notify the members that a new member has joined
+    const notification = {
+      type: "join",
+      planId: invite.planId,
+      icon: "account-multiple",
+      planName: plan.name,
+      senderName,
+      createdAt: new Date(),
+      isRead: false,
+    };
+    await addNotification(null, invite.planId, notification);
+    // send notification to the members of the plan
 
     return true;
   } catch (error) {
@@ -383,7 +399,7 @@ async function handleInviteAccept(uid, invite, email) {
   }
 }
 
-async function handleFamilyPlanDelete(uid, planId) {
+async function handleFamilyPlanDelete(uid, planId, senderName) {
   try {
     // get the user role in that plan
     // if the user is the owner, delete the plan from him and all members
@@ -407,6 +423,17 @@ async function handleFamilyPlanDelete(uid, planId) {
       // update the members object in the family plan
       const newMembers = members.filter((member) => member.uid != uid);
       await updateDoc(planRef, { members: newMembers });
+      // send a notification to the members of the plan
+      const notification = {
+        type: "leave",
+        planId,
+        icon: "account-multiple",
+        planName: plan.name,
+        senderName,
+        createdAt: new Date(),
+        isRead: false,
+      };
+      await addNotification(null, planId, notification);
     }
     return true;
   } catch (error) {

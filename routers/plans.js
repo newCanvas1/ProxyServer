@@ -30,12 +30,12 @@ plansRouter.post("/", async (req, res) => {
   }
 });
 plansRouter.post("/invite", async (req, res) => {
-  const { uid, invite, email, accept } = req.body;
+  const { uid, invite, email, accept,senderName } = req.body;
   let response = false;
   if (accept) {
-    response = await handleInviteAccept(uid, invite, email);
+    response = await handleInviteAccept(uid, invite, email,senderName);
   } else {
-    response = await handleInviteReject(uid, invite);
+    response = await handleInviteReject(uid, invite,senderName);
   }
   res.json({ success: response });
 });
@@ -79,10 +79,10 @@ plansRouter.post("/add", async (req, res) => {
   }
 });
 plansRouter.post("/update/members", async (req, res) => {
-  const { planId, members, senderName } = req.body;
+  const { planId, members, senderName,planName } = req.body;
   // send ivites to new members
   try {
-    await sendInvitesToNewMembers(planId, members, senderName);
+    await sendInvitesToNewMembers(planId, members, senderName,planName);
     await deletePlanFromDeletedMembers(planId, members);
     await updateDoc(doc(db, "family_plans", planId), { members });
     res.json({ success: true });
@@ -91,13 +91,13 @@ plansRouter.post("/update/members", async (req, res) => {
   }
 });
 plansRouter.post("/delete", async (req, res) => {
-  const { uid, planId } = req.body;
+  const { uid, planId,senderName } = req.body;
   const numOfPlans = await getNumberOfPlans(uid);
   if (numOfPlans == 1) {
     res.json({ success: false });
   } else {
     const response = checkIfFamilyPlan(planId)
-      ? await handleFamilyPlanDelete(uid, planId)
+      ? await handleFamilyPlanDelete(uid, planId,senderName)
       : await deletePlan(uid, planId);
     if (response) {
       res.json({ success: true });
