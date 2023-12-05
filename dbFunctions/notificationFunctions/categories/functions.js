@@ -43,9 +43,11 @@ async function catgeoryLimitExceeded(info) {
     // if yes, return false
     const message = {
       message: `You have exceeded the limit of ${updateFields.category}`,
+      category: updateFields.category,
       importance: "high",
       icon: "chart-line",
       isRead: false,
+      type:"categoryLimitExceeded",
       createdAt: new Date(),
     };
     addNotification(uid, planId, message);

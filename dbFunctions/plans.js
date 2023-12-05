@@ -244,6 +244,9 @@ async function sendInvitesToNewMembers(
       if (member.role == "owner") {
         return;
       }
+
+      // if the member has a doc in the User collection, send them an invite
+
       if (!members.some((m) => m.email == member.email)) {
         // get the uid of the member
         const userRef = collection(db, "User");
@@ -260,6 +263,10 @@ async function sendInvitesToNewMembers(
           uid = doc.id;
         });
 
+        if (uid == "") {
+          return;
+        }
+
         // send them an invite
         const invite = {
           type: "invite",
@@ -270,6 +277,7 @@ async function sendInvitesToNewMembers(
           createdAt: new Date(),
           isRead: false,
         };
+
         const ref = collection(db, "User", uid, "Invitations");
         await addDoc(ref, invite);
       }
@@ -301,6 +309,9 @@ async function deletePlanFromDeletedMembers(planId, members) {
         userQuerySnapshot.forEach((doc) => {
           uid = doc.id;
         });
+        if (uid == "") {
+          return;
+        }
 
         const ref = doc(db, "User", uid, "Plans", planId);
         // set first plan as last plan

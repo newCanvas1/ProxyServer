@@ -9,10 +9,52 @@ const {
   deleteDoc,
   addDoc,
   where,
+  getDoc,
 } = require("../firebaseConfig");
 const { checkIfFamilyPlan } = require("./general/functions");
 const { updateSpending } = require("./plans");
+async function getUserName(uid) {
+  const ref = doc(db, "User", uid);
+  const docSnap = await getDoc(ref);
+  if (docSnap.exists()) {
+    return docSnap.data().name;
+  } else {
+    return false;
+  }
+}
+async function getCategorySpendingPerUser(planId, categoryId) {
+  try {
+    const expensesRef = collection(db, "family_plans", planId, "Expenses");
+    const expensesQuery = query(
+      expensesRef,
+      categoryId && where("categoryId", "==", categoryId)
+    );
+    const expensesQuerySnapshot = await getDocs(expensesQuery);
+    let list = {};
+    expensesQuerySnapshot.forEach((doc) => {
+      const amount = parseFloat(doc.data().amount);
+      const name = doc.data().adder.uid;
+      if (list[name]) {
+        list[name] += amount;
+      } else {
+        list[name] = amount;
+      }
+    });
+    // for every uid in the list, get the name and replace the uid with the name
+    for (const uid in list) {
+      const name = await getUserName(uid);
+      list[name] = list[uid];
+      delete list[uid];
+    }
+   
 
+
+    return list;
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
+}
 async function getCategoriesAmount(uid, planId) {
   // go through expenses and add up the amounts for each category
   // return a list of objects with name and amount
@@ -235,4 +277,5 @@ module.exports = {
   getCategoriesAmount,
   getCategoryInfo,
   getAmountSpentThisYearPerMonthOfCategory,
+  getCategorySpendingPerUser,
 };

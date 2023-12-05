@@ -26,6 +26,7 @@ async function categoryBudgetExceeded(info) {
         type: "warning",
         icon: "wallet",
         isRead: false,
+        type: "budgetExceeded",
         createdAt: new Date(),
       });
     }
@@ -53,6 +54,7 @@ async function categoryHalfBudgetExceeded(info) {
         message: "You exceeded half your budget!",
         type: "warning",
         icon: "wallet",
+        type: "halfBudgetExceeded",
         isRead: false,
         createdAt: new Date(),
       });

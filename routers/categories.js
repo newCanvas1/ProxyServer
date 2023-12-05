@@ -7,6 +7,7 @@ const {
   getCategoriesAmount,
   getCategoryInfo,
   getAmountSpentThisYearPerMonthOfCategory,
+  getCategorySpendingPerUser,
 } = require("../dbFunctions/categories");
 const { getAmountSpentThisWeekPerDay } = require("../dbFunctions/expenses");
 
@@ -25,11 +26,7 @@ categoriesRouter.post("/", async (req, res) => {
 });
 categoriesRouter.post("/spending/thisWeek", async (req, res) => {
   const { uid, planId, categoryId } = req.body;
-  const expenses = await getAmountSpentThisWeekPerDay(
-    uid,
-    planId,
-    categoryId
-  );
+  const expenses = await getAmountSpentThisWeekPerDay(uid, planId, categoryId);
   if (expenses) {
     res.json({ success: true, data: expenses });
   } else {
@@ -92,6 +89,21 @@ categoriesRouter.post("/all/amount", async (req, res) => {
     return;
   }
   const response = await getCategoriesAmount(uid, planId);
+
+  if (response) {
+    res.json({ success: true, data: response });
+  } else {
+    res.json({ success: false });
+  }
+});
+categoriesRouter.post("/info/family", async (req, res) => {
+  const { planId, categoryId } = req.body;
+  if (planId == "" || categoryId == "") {
+    res.status(400).json({ success: false });
+    return;
+  }
+  console.log("planId", planId, "categoryId", categoryId);
+  const response = await getCategorySpendingPerUser(planId, categoryId);
 
   if (response) {
     res.json({ success: true, data: response });
