@@ -8,36 +8,55 @@ const {
   updateDoc,
   deleteDoc,
   addDoc,
+  setDoc,
+  writeBatch,
 } = require("../firebaseConfig");
 
 async function addGoal(uid, planId, goal) {
   try {
-    const ref = collection(db, "User", uid, "Plans", planId, "Goals");
-    const doc = await addDoc(ref, goal);
+    await setDoc(
+      doc(db, "User/" + uid + "/Plans/" + planId + "/Goals", goal.goalId),
+      goal
+    );
     return true;
   } catch (error) {
     console.error("Error in Adding Goal: ", error);
     return false;
   }
 }
-async function deleteGoal(uid, planId, goalId) {
+function deleteGoal(uid, planId, goalId) {
+  const docPath = `User/${uid}/Plans/${planId}/Goals`;
   try {
-    const ref = doc(db, "User", uid, "Plans", planId, "Goals", goalId);
-
-    await deleteDoc(ref)
-      .then(async () => {
+    deleteDoc(doc(db, docPath, goalId))
+      .then(() => {
         return true;
       })
-      .catch((err) => {
-        console.log(err);
+      .catch(() => {
         return false;
       });
-    return true;
+  } catch (error) {
+    console.error("Error in deleting goal ", error);
+    return false;
+  }
+}
+
+async function updateGoal(uid, planId, goalId, updatedGoal) {
+  try {
+    const batch = writeBatch(db);
+    const docPath = `User/${uid}/Plans/${planId}/Goals`;
+    const ref = doc(db, docPath, goalId);
+    batch.update(ref, {
+      goalName: updatedGoal.newGoalName,
+      goalCost: updatedGoal.newGoalCost,
+      goalDate: updatedGoal.newDate,
+    });
+    await batch.commit();
   } catch (error) {
     console.log(error);
     return false;
   }
 }
+
 async function getUserGoals(uid, planId) {
   try {
     let list = [];
@@ -56,25 +75,6 @@ async function getUserGoals(uid, planId) {
     }
 
     return list;
-  } catch (error) {
-    console.log(error);
-    return false;
-  }
-}
-async function updateGoal(uid, planId, goalId, updateFields) {
-  try {
-    const ref = doc(db, "User", uid, "Plans", planId, "Goals", goalId);
-    let result = false;
-    await updateDoc(ref, {
-      ...updateFields,
-    })
-      .then(() => {
-        result = true;
-      })
-      .catch(() => {
-        result = false;
-      });
-    return result;
   } catch (error) {
     console.log(error);
     return false;

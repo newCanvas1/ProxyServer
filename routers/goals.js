@@ -45,9 +45,9 @@ goalsRouter.post("/add", async (req, res) => {
   }
 });
 
-goalsRouter.delete("/delete", async (req, res) => {
-  const { uid, planId, goalId } = req.body;
-  const response = await deleteGoal(uid, planId, goalId);
+goalsRouter.delete("/delete/:uid/:planId/:goalId", (req, res) => {
+  const { uid, planId, goalId } = req.params;
+  const response = deleteGoal(uid, planId, goalId);
   if (response) {
     res.json({ success: true });
   } else {
@@ -56,24 +56,15 @@ goalsRouter.delete("/delete", async (req, res) => {
 });
 
 goalsRouter.put("/update", async (req, res) => {
-  const { uid, planId, goalId, updateFields } = req.body;
-  if (
-    updateFields.name == "" ||
-    updateFields.amount == "" ||
-    updateFields.endDate == ""
-  ) {
-    res.json({ success: false });
-    return;
-  }
-
-  const response = await updateGoal(uid, planId, goalId, updateFields);
-
+  const { uid, currentPlan, goalId, updatedGoal } = req.body;
+  const response = await updateGoal(uid, currentPlan, goalId, updatedGoal);
   if (response) {
     res.json({ success: true });
   } else {
     res.json({ success: false });
   }
 });
+
 goalsRouter.post("/field", async (req, res) => {
   const { uid, planId, goalId, field } = req.body;
 
