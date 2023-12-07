@@ -1,12 +1,16 @@
-const { categoryHalfBudgetExceeded,categoryBudgetExceeded } = require("./functions");
+const {
+  categoryHalfBudgetExceeded,
+  categoryBudgetExceeded,
+} = require("./functions");
 
-function checkPlansNotifications(info) {
-    categoryHalfBudgetExceeded(info);
-    categoryBudgetExceeded(info);
-
+function checkPlansNotifications(info, notificationOptions) {
+  console.log(notificationOptions,"hhhhhhh");
+  if (notificationOptions.ExceedBudgetLimit) {
   }
-  
-  module.exports = {
-    checkPlansNotifications,
-  };
-  
+  categoryHalfBudgetExceeded(info);
+  categoryBudgetExceeded(info);
+}
+
+module.exports = {
+  checkPlansNotifications,
+};
