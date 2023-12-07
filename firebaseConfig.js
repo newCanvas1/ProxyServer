@@ -12,15 +12,13 @@ const {
   addDoc,
   setDoc,
   updateDoc,
-  serverTimestamp
-  
-
+  serverTimestamp,
+  writeBatch,
 } = require("firebase/firestore");
 // Authentication methods
 const { initializeApp } = require("firebase/app");
 
 // Handling real-time database
-
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -52,5 +50,6 @@ module.exports = {
   addDoc,
   deleteDoc,
   updateDoc,
-  serverTimestamp
+  serverTimestamp,
+  writeBatch,
 };
