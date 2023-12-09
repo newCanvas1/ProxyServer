@@ -3,13 +3,12 @@ const {
   categoryBudgetExceeded,
 } = require("./functions");
 
-function checkPlansNotifications(info, notificationOptions) {
-  console.log(notificationOptions,"hhhhhhh");
-  if (notificationOptions.ExceedBudgetLimit) {
-  }
+function checkPlansNotifications(info) {
+
+ 
   categoryHalfBudgetExceeded(info);
   categoryBudgetExceeded(info);
-}
+
 
 module.exports = {
   checkPlansNotifications,

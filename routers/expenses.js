@@ -93,7 +93,7 @@ expensesRouter.post("/add", async (req, res) => {
     createdAt: date,
     adder
   };
-  const response = await addExpense(uid, planId, categoryId, expense,notificationOptions);
+  const response = await addExpense(uid, planId, categoryId, expense);
 
   if (response) {
     await updateSpending(uid, planId, amount, "increment");

@@ -333,7 +333,7 @@ async function getExpensesByField(uid, planId, categoryId, field, value) {
   return list;
 }
 
-async function addExpense(uid, planId, categoryId, expense,notificationOptions) {
+async function addExpense(uid, planId, categoryId, expense) {
   try {
     const ref = checkIfFamilyPlan(planId)
       ? collection(db, "family_plans", planId, "Expenses")
@@ -342,7 +342,7 @@ async function addExpense(uid, planId, categoryId, expense,notificationOptions) 
     const doc = await addDoc(ref, expense);
 
     const info = { uid, planId, categoryId, updateFields: expense };
-    checkNotifications(info,notificationOptions);
+    checkNotifications(info);
     return doc.id;
   } catch (error) {
     console.log(error);

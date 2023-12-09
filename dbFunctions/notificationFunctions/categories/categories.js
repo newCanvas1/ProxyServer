@@ -1,10 +1,9 @@
 const { catgeoryLimitExceeded } = require("./functions");
-function checkCategoryNotifications(info,notificationOptions) {
-  console.log(notificationOptions);
-  if (notificationOptions.ExceedCategories) {
+function checkCategoryNotifications(info) {
+
       catgeoryLimitExceeded(info);
 
-  }
+  
 }
 
 module.exports = {
