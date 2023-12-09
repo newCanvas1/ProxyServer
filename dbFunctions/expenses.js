@@ -273,6 +273,30 @@ async function getExpensesPerDay(
     return false;
   }
 }
+async function getAllExpenses(uid, planId) {
+  let expenses = [];
+  const expensesQuery = query(
+    collection(db, "User", uid, "Plans", planId, "Expenses"),
+    orderBy("createdAt", "asc")
+  );
+  const routinesQuerySnapshot = await getDocs(expensesQuery);
+  routinesQuerySnapshot.forEach((doc) => {
+    expenses.push({ ...doc.data(), id: doc.id });
+  });
+
+  return expenses;
+}
+
+async function getFirstLastExpensesDuration(uid, planId) {
+  let expenses = await getAllExpenses(uid, planId);
+  const firstExpense = expenses[0];
+  const lastExpense = expenses[expenses.length - 1];
+  const durationInHours =
+    (lastExpense.createdAt.seconds - firstExpense.createdAt.seconds) / 3600;
+
+  return Math.floor(durationInHours);
+}
+
 async function getExpensesBetweenDates(uid, planId, categoryId) {
   let list = [];
   const startDate = new Date("2023-01-01");
@@ -280,7 +304,6 @@ async function getExpensesBetweenDates(uid, planId, categoryId) {
   const routinesQuery = query(
     collection(db, "User", uid, "Plans", planId, "Expenses"),
     where("categoryId", "==", categoryId),
-
     orderBy("createdAt", "desc"),
     where("createdAt", ">=", startDate),
     where("createdAt", "<=", endDate)
@@ -355,4 +378,6 @@ module.exports = {
   getAmountSpentThisWeekPerDay,
   getExpensesPerDay,
   getExpensesCountPerDay,
+  getFirstLastExpensesDuration,
+  getAllExpenses,
 };

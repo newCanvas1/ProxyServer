@@ -11,6 +11,7 @@ const {
   setDoc,
   writeBatch,
 } = require("../firebaseConfig");
+const { getFirstLastExpensesDuration, getAllExpenses } = require("./expenses");
 
 async function addGoal(uid, planId, goal) {
   try {
@@ -60,7 +61,6 @@ async function updateGoal(uid, planId, goalId, updatedGoal) {
 async function getUserGoals(uid, planId) {
   try {
     let list = [];
-
     const planIDQuery = query(
       collection(db, "User", uid, "Plans", planId, "Goals")
     );
@@ -99,10 +99,33 @@ async function getGoalField(uid, planId, goalId, field) {
     console.log(error);
   }
 }
+
+const getCurrentBudget = async (uid, planId) => {
+  try {
+    const budgetRef = doc(db, "User", uid, "Plans", planId);
+    const budgetSnap = await getDoc(budgetRef);
+    let budget = "";
+    if (budgetSnap.exists()) {
+      budget = parseInt(budgetSnap.data()["budget"]);
+    }
+    // get all expenses amount
+    const allExpenses = await getAllExpenses(uid, planId);
+    let amount = 0;
+    allExpenses.map((expense) => {
+      amount += parseInt(expense.amount);
+    });
+
+    // return current budget
+    return budget - amount;
+  } catch (error) {
+    console.log(error);
+  }
+};
 module.exports = {
   addGoal,
   deleteGoal,
   updateGoal,
   getUserGoals,
   getGoalField,
+  getCurrentBudget,
 };

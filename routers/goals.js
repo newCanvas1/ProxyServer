@@ -5,7 +5,9 @@ const {
   deleteGoal,
   updateGoal,
   getGoalField,
+  getCurrentBudget,
 } = require("../dbFunctions/goals");
+const { getFirstLastExpensesDuration } = require("../dbFunctions/expenses");
 const { updateDoc } = require("firebase/firestore");
 const goalsRouter = express.Router();
 
@@ -76,4 +78,12 @@ goalsRouter.post("/field", async (req, res) => {
   }
 });
 
+goalsRouter.get("/goals-total-saving/:uid/:planId", async (req, res) => {
+  // first we need to get current budget
+  const { uid, planId } = req.params;
+  const currentBudget = await getCurrentBudget(uid, planId);
+  const durationInHours = await getFirstLastExpensesDuration(uid, planId);
+  const savedAmountPerHour = currentBudget / durationInHours;
+  res.json({ success: true, savedAmountPerHour });
+});
 module.exports = goalsRouter;
