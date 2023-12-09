@@ -223,14 +223,7 @@ async function getExpenses(uid, planId, categoryId, order, lastDocument) {
     return false;
   }
 }
-async function getExpensesPerDay(
-  uid,
-  planId,
-  categoryId,
-  order,
-  lastDocument,
-  name
-) {
+async function getExpensesPerDay(uid, planId, categoryId, order, lastDocument,name) {
   try {
     const expensesByDate = {};
     const LIMIT = 7;
@@ -238,20 +231,25 @@ async function getExpensesPerDay(
     const ref = checkIfFamilyPlan(planId)
       ? collection(db, "family_plans", planId, "Expenses")
       : collection(db, "User", uid, "Plans", planId, "Expenses");
+    let routinesQuery = query(ref);
+    routinesQuery= query(routinesQuery,orderBy("createdAt", order || "desc"))
+    if (categoryId) {
+      routinesQuery = query(routinesQuery,where("categoryId", "==", categoryId))
+    }
+    // name filter
+    if (name) {
+      routinesQuery = query(routinesQuery,where("name","==",name))
+    }
 
     if (lastDocument) {
       routinesQuery = query(
-        ref,
-        categoryId && where("categoryId", "==", categoryId),
-        orderBy("createdAt", order || "desc"),
+        routinesQuery,
         startAfter(new Date(lastDocument.createdAt.seconds * 1000)),
         limit(LIMIT)
       );
     } else {
       routinesQuery = query(
-        ref,
-        categoryId && where("categoryId", "==", categoryId),
-        orderBy("createdAt", order || "desc"),
+        routinesQuery,
         limit(LIMIT)
       );
     }
@@ -335,7 +333,7 @@ async function getExpensesByField(uid, planId, categoryId, field, value) {
   return list;
 }
 
-async function addExpense(uid, planId, categoryId, expense) {
+async function addExpense(uid, planId, categoryId, expense,notificationOptions) {
   try {
     const ref = checkIfFamilyPlan(planId)
       ? collection(db, "family_plans", planId, "Expenses")
@@ -344,7 +342,7 @@ async function addExpense(uid, planId, categoryId, expense) {
     const doc = await addDoc(ref, expense);
 
     const info = { uid, planId, categoryId, updateFields: expense };
-    checkNotifications(info);
+    checkNotifications(info,notificationOptions);
     return doc.id;
   } catch (error) {
     console.log(error);
