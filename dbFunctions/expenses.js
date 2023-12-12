@@ -301,8 +301,7 @@ async function getFirstLastExpensesDuration(uid, planId) {
     durationInHours =
       (lastExpense.createdAt.seconds - firstExpense.createdAt.seconds) / 3600;
   }
-
-  return Math.floor(durationInHours);
+  return durationInHours;
 }
 
 async function getExpensesBetweenDates(uid, planId, categoryId) {

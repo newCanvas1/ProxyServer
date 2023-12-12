@@ -83,7 +83,10 @@ goalsRouter.get("/goals-total-saving/:uid/:planId", async (req, res) => {
   const { uid, planId } = req.params;
   let savedAmountPerHour = 0;
   const currentBudget = await getCurrentBudget(uid, planId);
-  const durationInHours = await getFirstLastExpensesDuration(uid, planId);
+  let durationInHours = await getFirstLastExpensesDuration(uid, planId);
+  if (durationInHours >= 0 && durationInHours < 1) {
+    durationInHours = -1;
+  }
   if (durationInHours != -1) {
     savedAmountPerHour = currentBudget / durationInHours;
   }
