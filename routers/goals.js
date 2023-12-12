@@ -81,9 +81,13 @@ goalsRouter.post("/field", async (req, res) => {
 goalsRouter.get("/goals-total-saving/:uid/:planId", async (req, res) => {
   // first we need to get current budget
   const { uid, planId } = req.params;
+  let savedAmountPerHour = 0;
   const currentBudget = await getCurrentBudget(uid, planId);
   const durationInHours = await getFirstLastExpensesDuration(uid, planId);
-  const savedAmountPerHour = currentBudget / durationInHours;
+  if (durationInHours != -1) {
+    savedAmountPerHour = currentBudget / durationInHours;
+  }
+
   res.json({ success: true, savedAmountPerHour });
 });
 module.exports = goalsRouter;

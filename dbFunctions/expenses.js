@@ -223,7 +223,14 @@ async function getExpenses(uid, planId, categoryId, order, lastDocument) {
     return false;
   }
 }
-async function getExpensesPerDay(uid, planId, categoryId, order, lastDocument,name) {
+async function getExpensesPerDay(
+  uid,
+  planId,
+  categoryId,
+  order,
+  lastDocument,
+  name
+) {
   try {
     const expensesByDate = {};
     const LIMIT = 7;
@@ -232,13 +239,16 @@ async function getExpensesPerDay(uid, planId, categoryId, order, lastDocument,na
       ? collection(db, "family_plans", planId, "Expenses")
       : collection(db, "User", uid, "Plans", planId, "Expenses");
     let routinesQuery = query(ref);
-    routinesQuery= query(routinesQuery,orderBy("createdAt", order || "desc"))
+    routinesQuery = query(routinesQuery, orderBy("createdAt", order || "desc"));
     if (categoryId) {
-      routinesQuery = query(routinesQuery,where("categoryId", "==", categoryId))
+      routinesQuery = query(
+        routinesQuery,
+        where("categoryId", "==", categoryId)
+      );
     }
     // name filter
     if (name) {
-      routinesQuery = query(routinesQuery,where("name","==",name))
+      routinesQuery = query(routinesQuery, where("name", "==", name));
     }
 
     if (lastDocument) {
@@ -248,10 +258,7 @@ async function getExpensesPerDay(uid, planId, categoryId, order, lastDocument,na
         limit(LIMIT)
       );
     } else {
-      routinesQuery = query(
-        routinesQuery,
-        limit(LIMIT)
-      );
+      routinesQuery = query(routinesQuery, limit(LIMIT));
     }
 
     const routinesQuerySnapshot = await getDocs(routinesQuery);
@@ -287,10 +294,13 @@ async function getAllExpenses(uid, planId) {
 
 async function getFirstLastExpensesDuration(uid, planId) {
   let expenses = await getAllExpenses(uid, planId);
-  const firstExpense = expenses[0];
-  const lastExpense = expenses[expenses.length - 1];
-  const durationInHours =
-    (lastExpense.createdAt.seconds - firstExpense.createdAt.seconds) / 3600;
+  let durationInHours = -1;
+  if (expenses.length != 0) {
+    const firstExpense = expenses[0];
+    const lastExpense = expenses[expenses.length - 1];
+    durationInHours =
+      (lastExpense.createdAt.seconds - firstExpense.createdAt.seconds) / 3600;
+  }
 
   return Math.floor(durationInHours);
 }
@@ -333,7 +343,13 @@ async function getExpensesByField(uid, planId, categoryId, field, value) {
   return list;
 }
 
-async function addExpense(uid, planId, categoryId, expense) {
+async function addExpense(
+  uid,
+  planId,
+  categoryId,
+  expense,
+  notificationOptions
+) {
   try {
     const ref = checkIfFamilyPlan(planId)
       ? collection(db, "family_plans", planId, "Expenses")
@@ -342,7 +358,7 @@ async function addExpense(uid, planId, categoryId, expense) {
     const doc = await addDoc(ref, expense);
 
     const info = { uid, planId, categoryId, updateFields: expense };
-    checkNotifications(info);
+    checkNotifications(info, notificationOptions);
     return doc.id;
   } catch (error) {
     console.log(error);

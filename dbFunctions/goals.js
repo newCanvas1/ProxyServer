@@ -111,14 +111,17 @@ const getCurrentBudget = async (uid, planId) => {
     // get all expenses amount
     const allExpenses = await getAllExpenses(uid, planId);
     let amount = 0;
-    allExpenses.map((expense) => {
-      amount += parseInt(expense.amount);
-    });
+    if (allExpenses.length != 0) {
+      allExpenses.map((expense) => {
+        amount += parseInt(expense.amount);
+      });
+    }
 
     // return current budget
     return budget - amount;
   } catch (error) {
     console.log(error);
+    return 0;
   }
 };
 module.exports = {
