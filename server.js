@@ -11,7 +11,7 @@ const plansRouter = require("./routers/plans");
 const userRouter = require("./routers/user");
 const categoriesRouter = require("./routers/categories");
 const goalsRouter = require("./routers/goals");
-
+const financialReportRouter = require("./routers/financialReport");
 app.use(cors());
 app.disable("x-powered-by");
 
@@ -35,7 +35,7 @@ app.use("/plans", plansRouter);
 app.use("/user", userRouter);
 app.use("/categories", categoriesRouter);
 app.use("/goals", goalsRouter);
-
+app.use("/financial-report", financialReportRouter);
 // Start the server
 app.listen(port, () => {
   console.log(`Server listening on port ${port}`);
