@@ -22,14 +22,13 @@ const { initializeApp } = require("firebase/app");
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyBy6Tw4wTaBdn-sFWSdi_L4XIBsGhZORpg",
-  authDomain: "boky-20899.firebaseapp.com",
-  projectId: "boky-20899",
-  storageBucket: "boky-20899.appspot.com",
-  messagingSenderId: "448894570744",
-  appId: "1:448894570744:web:24ce3b77d860965cc56b0d",
+  apiKey: "AIzaSyA-351UQjRQ1YIPSJmr1RA4vym3GRwGFPA",
+  authDomain: "boky-final.firebaseapp.com",
+  projectId: "boky-final",
+  storageBucket: "boky-final.appspot.com",
+  messagingSenderId: "20350385307",
+  appId: "1:20350385307:web:9d0f70432b807a1ec4da3e"
 };
-
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
